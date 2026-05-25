@@ -2,9 +2,12 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 强制移动端适配，禁止缩放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>生生生生生存</title>
     <style>
+        /* 全局重置，抹平浏览器默认差异 */
+        * {margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
         :root {
             --primary: #4c8c2b;
             --secondary: #386c20;
@@ -12,14 +15,14 @@
             --bg: #1e1e1e;
             --text: #fff;
         }
-        * {margin:0;padding:0;box-sizing:border-box;}
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: Microsoft Yahei,sans-serif;
+            font-family: "Microsoft Yahei",sans-serif;
             line-height: 1.6;
+            font-size: 16px;
         }
-        .container {max-width: 1200px;margin: 0 auto;padding: 0 20px;}
+        .container {max-width: 1200px;margin: 0 auto;padding: 0 15px;}
 
         header {
             padding: 20px 0;
@@ -32,7 +35,8 @@
             background:#223318;opacity:0.4;z-index:-1;
         }
         .server-title {
-            font-size: 3rem;margin-bottom:10px;color:var(--primary);
+            font-size: clamp(2rem,5vw,3rem);
+            margin-bottom:10px;color:var(--primary);
             animation: breath 3s ease-in-out infinite;
         }
         @keyframes breath {
@@ -40,102 +44,96 @@
             50%{transform:scale(1.02)}
         }
         .server-subtitle {
-            padding:15px 25px;margin:0 auto 20px;
+            padding:12px 20px;margin:0 auto 20px;
             background:rgba(0,0,0,0.3);border-radius:5px;display:inline-block;
         }
 
-        .banner {padding:40px 0;text-align:center;}
+        .banner {padding:30px 0;text-align:center;}
         .server-addr {
-            margin:20px auto;padding:10px 20px;
+            margin:20px auto;padding:10px 15px;
             background:rgba(0,0,0,0.3);border-radius:4px;
-            display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;
+            display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;
         }
-        .addr-text {color:var(--accent);font-size:1.2rem;font-family:monospace;}
+        .addr-text {color:var(--accent);font-size:1.1rem;font-family:monospace;}
         .copy-btn,.refresh-btn {
             background:var(--primary);color:#fff;border:none;
-            padding:8px 16px;border-radius:4px;cursor:pointer;
-            transition:0.2s;
+            padding:7px 14px;border-radius:4px;cursor:pointer;
+            transition: all 0.2s ease;
+            font-size: 15px;
         }
         .copy-btn:hover,.refresh-btn:hover {background:var(--secondary);}
-        .info-row {display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:15px 0;}
+        .info-row {display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:15px 0;}
         .info-tag {
             background:rgba(0,0,0,0.2);color:var(--accent);
-            padding:5px 15px;border-radius:20px;font-weight:bold;
+            padding:5px 12px;border-radius:20px;font-weight:bold;font-size:15px;
         }
         .online {color:#4CAF50;border:1px solid #4CAF50;}
         .offline {color:#f44336;border:1px solid #f44336;}
         .unknown {color:#ff9800;border:1px solid #ff9800;}
         .desc-box {
-            max-width:600px;margin:30px auto;padding:20px;
+            max-width:600px;margin:25px auto;padding:18px;
             background:rgba(0,0,0,0.3);border-radius:4px;
         }
-        .desc-box h3 {color:var(--accent);margin-bottom:10px;}
+        .desc-box h3 {color:var(--accent);margin-bottom:8px;}
 
+        /* 兼容滚动入场动画 */
         .scroll-item {
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.7s ease;
+            transform: translateY(25px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
         }
         .scroll-item.active {
             opacity: 1;
             transform: translateY(0);
         }
 
-        .feature-wrap {padding:60px 0;background:rgba(0,0,0,0.2);}
-        .sec-title {text-align:center;font-size:2rem;color:var(--primary);margin-bottom:30px;}
-        .tag-list {display:flex;flex-wrap:wrap;justify-content:center;gap:15px;list-style:none;}
+        .feature-wrap {padding:45px 0;background:rgba(0,0,0,0.2);}
+        .sec-title {text-align:center;font-size:clamp(1.5rem,3vw,2rem);color:var(--primary);margin-bottom:25px;}
+        .tag-list {display:flex;flex-wrap:wrap;justify-content:center;gap:12px;list-style:none;}
         .tag-item {
-            padding:10px 20px;background:rgba(0,0,0,0.3);
+            padding:8px 18px;background:rgba(0,0,0,0.3);
             border:1px solid var(--primary);border-radius:30px;
         }
         .card-grid {
-            display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-            gap:30px;margin-top:40px;
+            display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+            gap:20px;margin-top:30px;
         }
         .feat-card {
-            padding:20px;text-align:center;
+            padding:18px;text-align:center;
             background:rgba(255,255,255,0.05);
             border:1px solid rgba(255,255,255,0.1);border-radius:8px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .feat-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+            transform: translateY(-6px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.35);
         }
-        .card-icon {font-size:2rem;color:var(--accent);margin-bottom:15px;}
-        .card-name {color:var(--primary);margin-bottom:10px;}
+        .card-icon {font-size:1.8rem;color:var(--accent);margin-bottom:12px;}
+        .card-name {color:var(--primary);margin-bottom:8px;}
 
-        .rule-wrap {padding:60px 0;}
+        .rule-wrap {padding:45px 0;}
         .rule-grid {
-            display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
-            gap:30px;
+            display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+            gap:20px;
         }
         .rule-card {
-            display:flex;gap:15px;padding:20px;
+            display:flex;gap:12px;padding:18px;
             background:rgba(255,255,255,0.05);
             border:1px solid rgba(255,255,255,0.1);border-radius:8px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .rule-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
         .rule-num {
-            width:40px;height:40px;border-radius:50%;
+            width:36px;height:36px;border-radius:50%;
             background:var(--primary);display:flex;align-items:center;
             justify-content:center;font-weight:bold;flex-shrink:0;
         }
         .rule-text h3 {color:var(--primary);margin-bottom:5px;}
 
-        footer {padding:30px 0;text-align:center;font-size:0.9rem;color:rgba(255,255,255,0.5);}
-
-        @media (max-width:768px){
-            .server-title{font-size:2.2rem}
-            .rule-grid{grid-template-columns:1fr}
-        }
-        @media (max-width:480px){
-            .server-title{font-size:1.8rem}
-        }
+        footer {padding:25px 0;text-align:center;font-size:0.9rem;color:rgba(255,255,255,0.5);}
     </style>
 </head>
 <body>
@@ -198,7 +196,7 @@
 
 <section class="rule-wrap">
     <div class="container">
-        <h2 class="sec-title scroll-item">服务器守则</h2>
+        <h2 class="sec-title scroll-item">服务器诡异守则</h2>
         <div class="rule-grid">
             <div class="rule-card scroll-item">
                 <span class="rule-num">1</span>
@@ -263,7 +261,6 @@ async function checkServer(){
     document.getElementById("serverStat").className = "info-tag unknown";
 
     try{
-        // 更换为低延迟的 mcstatus.io 接口
         let res = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}:${port}`);
         let d = await res.json();
         isOn = d.online;
