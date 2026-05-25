@@ -4,865 +4,308 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>生生生生生存</title>
-    <meta name="description" content="原版生存这一块，原汁原味这一块">
-    <meta name="keywords" content="我的世界,服务器,生生生生生存,多人联机">
     <style>
         :root {
-            --primary-color: #4c8c2b;
-            --secondary-color: #386c20;
-            --accent-color: #8bc34a;
-            --bg-color: #1e1e1e;
-            --text-color: #ffffff;
+            --primary: #4c8c2b;
+            --secondary: #386c20;
+            --accent: #8bc34a;
+            --bg: #1e1e1e;
+            --text: #fff;
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * {margin:0;padding:0;box-sizing:border-box;}
         body {
-            font-family: "Microsoft Yahei", sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background: var(--bg);
+            color: var(--text);
+            font-family: Microsoft Yahei,sans-serif;
             line-height: 1.6;
-            animation: fadeIn 0.8s ease forwards;
         }
+        .container {max-width: 1200px;margin: 0 auto;padding: 0 20px;}
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
+        /* 头部呼吸动画 */
         header {
-            background-color: rgba(0, 0, 0, 0.5);
             padding: 20px 0;
             text-align: center;
+            background: rgba(0,0,0,0.5);
             position: relative;
         }
-        
         header::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: #223318;
-            opacity: 0.4;
-            z-index: -1;
+            content:"";position:absolute;inset:0;
+            background:#223318;opacity:0.4;z-index:-1;
         }
-        
         .server-title {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            animation: breathe 3s ease-in-out infinite;
+            font-size: 3rem;margin-bottom:10px;color:var(--primary);
+            animation: breath 3s ease-in-out infinite;
         }
-
-        @keyframes breathe {
-            0%, 100% {
-                transform: scale(1);
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 10px rgba(76, 140, 43, 0.3);
-            }
-            50% {
-                transform: scale(1.02);
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(76, 140, 43, 0.6);
-            }
+        @keyframes breath {
+            0%,100%{transform:scale(1)}
+            50%{transform:scale(1.02)}
         }
-        
         .server-subtitle {
-            font-size: 1.2rem;
-            margin: 0 auto 20px;
-            background: rgba(0,0,0,0.3);
-            padding: 15px 25px;
-            border-radius: 5px;
-            display: inline-block;
-        }
-        
-        .banner-section {
-            padding: 40px 0;
-            text-align: center;
-        }
-        
-        .server-address {
-            margin: 20px auto;
-            background: rgba(0,0,0,0.3);
-            padding: 10px 20px;
-            border-radius: 4px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .address-text {
-            font-family: monospace;
-            font-size: 1.2rem;
-            color: var(--accent-color);
-        }
-        
-        .copy-btn {
-            background: var(--primary-color);
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-        .copy-btn:hover {
-            background: var(--secondary-color);
-        }
-        .copy-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .server-info-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .server-version,.player-count {
-            background: rgba(0,0,0,0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            color: var(--accent-color);
-            font-weight: bold;
-        }
-        .server-status.status-online {
-            color: #4CAF50;
-            border: 1px solid #4CAF50;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-        .server-status.status-offline {
-            color: #f44336;
-            border: 1px solid #f44336;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-        
-        .server-motd {
-            background: rgba(0,0,0,0.3);
-            padding: 20px;
-            border-radius: 4px;
-            max-width: 600px;
-            margin: 30px auto;
-        }
-        .server-motd h3 {
-            color: var(--accent-color);
-            margin-bottom: 10px;
-        }
-        
-        .features-section {
-            padding: 60px 0;
-            background: rgba(0,0,0,0.2);
-        }
-        .section-title {
-            font-size: 2rem;
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 30px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease;
-        }
-        .section-title.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .server-features {
-            list-style: none;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-        }
-        .server-feature {
-            background: rgba(0,0,0,0.3);
-            padding: 10px 20px;
-            border-radius: 30px;
-            border: 1px solid var(--primary-color);
-        }
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px,1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
-        .feature-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.6s ease;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        .feature-card.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        }
-        .feature-icon {
-            font-size: 2rem;
-            color: var(--accent-color);
-            margin-bottom: 15px;
-        }
-        .feature-title {
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-        
-        .rules-section {
-            padding: 60px 0;
-        }
-        .rules-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
-            gap: 30px;
-        }
-        .rule-item {
-            display: flex;
-            gap: 15px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 8px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease;
-        }
-        .rule-item.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .rule-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-        .rule-content h3 {
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-        
-        footer {
-            background: rgba(0,0,0,0.5);
-            padding: 30px 0;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-        .copyright {
-            color: rgba(255,255,255,0.5);
-            margin-top: 15px;
+            padding:15px 25px;margin:0 auto 20px;
+            background:rgba(0,0,0,0.3);border-radius:5px;display:inline-block;
         }
 
-        @media (max-width: 768px) {
-            .server-title {font-size: 2.2rem;}
-            .rules-container {grid-template-columns: 1fr;}
+        /* 服务器信息区 */
+        .banner {padding:40px 0;text-align:center;}
+        .server-addr {
+            margin:20px auto;padding:10px 20px;
+            background:rgba(0,0,0,0.3);border-radius:4px;
+            display:inline-flex;gap:10px;align-items:center;
         }
-        @media (max-width: 480px) {
-            .server-title {font-size: 1.8rem;}
-            .server-address {flex-direction: column;}
+        .addr-text {color:var(--accent);font-size:1.2rem;font-family:monospace;}
+        .copy-btn {
+            background:var(--primary);color:#fff;border:none;
+            padding:8px 16px;border-radius:4px;cursor:pointer;
+            transition:0.2s;
+        }
+        .copy-btn:hover {background:var(--secondary);}
+        .info-row {display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:15px 0;}
+        .info-tag {
+            background:rgba(0,0,0,0.2);color:var(--accent);
+            padding:5px 15px;border-radius:20px;font-weight:bold;
+        }
+        .online {color:#4CAF50;border:1px solid #4CAF50;}
+        .offline {color:#f44336;border:1px solid #f44336;}
+        .desc-box {
+            max-width:600px;margin:30px auto;padding:20px;
+            background:rgba(0,0,0,0.3);border-radius:4px;
+        }
+        .desc-box h3 {color:var(--accent);margin-bottom:10px;}
+
+        /* 滚动入场基础样式 */
+        .scroll-item {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.7s ease;
+        }
+        .scroll-item.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 特色卡片 + 悬停上滑 */
+        .feature-wrap {padding:60px 0;background:rgba(0,0,0,0.2);}
+        .sec-title {text-align:center;font-size:2rem;color:var(--primary);margin-bottom:30px;}
+        .tag-list {display:flex;flex-wrap:wrap;justify-content:center;gap:15px;list-style:none;}
+        .tag-item {
+            padding:10px 20px;background:rgba(0,0,0,0.3);
+            border:1px solid var(--primary);border-radius:30px;
+        }
+        .card-grid {
+            display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+            gap:30px;margin-top:40px;
+        }
+        .feat-card {
+            padding:20px;text-align:center;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.1);border-radius:8px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        /* 鼠标悬浮上滑 */
+        .feat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+        }
+        .card-icon {font-size:2rem;color:var(--accent);margin-bottom:15px;}
+        .card-name {color:var(--primary);margin-bottom:10px;}
+
+        /* 规则卡片悬停 */
+        .rule-wrap {padding:60px 0;}
+        .rule-grid {
+            display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+            gap:30px;
+        }
+        .rule-card {
+            display:flex;gap:15px;padding:20px;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.1);border-radius:8px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .rule-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+        }
+        .rule-num {
+            width:40px;height:40px;border-radius:50%;
+            background:var(--primary);display:flex;align-items:center;
+            justify-content:center;font-weight:bold;flex-shrink:0;
+        }
+        .rule-text h3 {color:var(--primary);margin-bottom:5px;}
+
+        footer {padding:30px 0;text-align:center;font-size:0.9rem;color:rgba(255,255,255,0.5);}
+
+        /* 适配 */
+        @media (max-width:768px){
+            .server-title{font-size:2.2rem}
+            .rule-grid{grid-template-columns:1fr}
+        }
+        @media (max-width:480px){
+            .server-title{font-size:1.8rem}
+            .server-addr{flex-direction:column}
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1 class="server-title">生生生生生存</h1>
-            <p class="server-subtitle">原版生存这一块，原汁原味这一块</p>
+<header>
+    <div class="container">
+        <h1 class="server-title">生生生生生存</h1>
+        <p class="server-subtitle">原版生存这一块，原汁原味这一块</p>
+    </div>
+</header>
+
+<section class="banner">
+    <div class="container">
+        <div class="server-addr">
+            <span class="addr-text">114.66.23.27:6031</span>
+            <button class="copy-btn" onclick="copyTxt('114.66.23.27:6031')">复制地址</button>
         </div>
-    </header>
-    
-    <section class="banner-section">
-        <div class="container">
-            <div class="server-address">
-                <span class="address-text">114.66.23.27:6031</span>
-                <button class="copy-btn" onclick="复制地址('114.66.23.27:6031')">复制地址</button>
-            </div>
-            
-            <div class="server-info-container">
-                <div class="server-version">游戏版本：26.1.2</div>
-                <div class="player-count" id="mc-players">在线人数：--/--</div>
-                <div class="server-status status-online" id="mc-status">服务器状态：检测中...</div>
-            </div>
-            
-            <div class="server-motd">
-                <h3>服务器简介</h3>
-                <div class="motd-content">
-                    超级无敌酷炫炸裂的原版生存<br>雷霆简介
-                </div>
-            </div>
+        <div class="info-row">
+            <div class="info-tag">游戏版本：26.1.2</div>
+            <div class="info-tag" id="playerNum">在线人数：--/--</div>
+            <div class="info-tag" id="serverStat">服务器状态：检测中</div>
         </div>
-    </section>
-    
-    <section class="features-section">
-        <div class="container">
-            <h2 class="section-title">服务器特色</h2>
-            <ul class="server-features">
-                <li class="server-feature">原版生存</li>
-            </ul>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🏠</div>
-                    <h3 class="feature-title">和睦社群</h3>
-                    <p>氛围融洽的MC玩家聚集地</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🛡️</div>
-                    <h3 class="feature-title">专人管理</h3>
-                    <p>管理员在线维护公平游玩环境</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🚀</div>
-                    <h3 class="feature-title">稳定更新</h3>
-                    <p>紧跟版本内容，持续优化体验</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🌐</div>
-                    <h3 class="feature-title">低延迟运行</h3>
-                    <p>流畅游戏，极少卡顿掉线</p>
-                </div>
+        <div class="desc-box">
+            <h3>服务器简介</h3>
+            <p>超级无敌酷炫炸裂的原版生存<br>雷霆简介</p>
+        </div>
+    </div>
+</section>
+
+<section class="feature-wrap">
+    <div class="container">
+        <h2 class="sec-title scroll-item">服务器特色</h2>
+        <ul class="tag-list">
+            <li class="tag-item">原版生存</li>
+        </ul>
+        <div class="card-grid">
+            <div class="feat-card scroll-item">
+                <div class="card-icon">🏠</div>
+                <h3 class="card-name">和睦社群</h3>
+                <p>氛围融洽的MC玩家聚集地</p>
+            </div>
+            <div class="feat-card scroll-item">
+                <div class="card-icon">🛡️</div>
+                <h3 class="card-name">专人管理</h3>
+                <p>管理员在线维护公平游玩环境</p>
+            </div>
+            <div class="feat-card scroll-item">
+                <div class="card-icon">🚀</div>
+                <h3 class="card-name">稳定更新</h3>
+                <p>紧跟版本内容，持续优化体验</p>
+            </div>
+            <div class="feat-card scroll-item">
+                <div class="card-icon">🌐</div>
+                <h3 class="card-name">低延迟运行</h3>
+                <p>流畅游戏，极少卡顿掉线</p>
             </div>
         </div>
-    </section>
-    
-    <section class="rules-section">
-        <div class="container">
-            <h2 class="section-title">服务器诡异守则</h2>
-            <div class="rules-container">
-                <div class="rule-item">
-                    <span class="rule-number">1</span>
-                    <div class="rule-content">
-                        <h3>守则一</h3>
-                        <p>服务器不存在匿名隐形玩家。若你在地图中发现方块被莫名放置、破坏、挪动，身边无任何玩家ID显示，立刻远离该区域，不要追查、不要溯源。</p>
-                    </div>
+    </div>
+</section>
+
+<section class="rule-wrap">
+    <div class="container">
+        <h2 class="sec-title scroll-item">服务器诡异守则</h2>
+        <div class="rule-grid">
+            <div class="rule-card scroll-item">
+                <span class="rule-num">1</span>
+                <div class="rule-text">
+                    <h3>守则一</h3>
+                    <p>服务器不存在匿名隐形玩家。若你在地图中发现方块被莫名放置、破坏、挪动，身边无任何玩家ID显示，立刻远离该区域。</p>
                 </div>
-                <div class="rule-item">
-                    <span class="rule-number">2</span>
-                    <div class="rule-content">
-                        <h3>守则二</h3>
-                        <p>正常玩家的移动、挖掘、放置方块均会对应音效。若你在空旷区域听到持续的走路声、挖土声、开门声，却看不到任何人，禁止四处张望探查，快速回到屋内，关闭所有出入口。</p>
-                    </div>
+            </div>
+            <div class="rule-card scroll-item">
+                <span class="rule-num">2</span>
+                <div class="rule-text">
+                    <h3>守则二</h3>
+                    <p>正常玩家移动挖掘都有音效，空旷处听见脚步声却不见人，立刻退回屋内紧闭出入口。</p>
                 </div>
-                <div class="rule-item">
-                    <span class="rule-number">3</span>
-                    <div class="rule-content">
-                        <h3>守则三</h3>
-                        <p>服务器昼夜循环正常，不会静止、不会无限黑夜。若你发现月亮高悬不落、天空持续漆黑，立刻停止一切建造与探索，等待自然天亮即可，切勿外出打怪挖矿。</p>
-                    </div>
+            </div>
+            <div class="rule-card scroll-item">
+                <span class="rule-num">3</span>
+                <div class="rule-text">
+                    <h3>守则三</h3>
+                    <p>昼夜循环异常天色漆黑时，停止探索建造，静待天亮，不要外出冒险挖矿。</p>
                 </div>
-                <div class="rule-item">
-                    <span class="rule-number">4</span>
-                    <div class="rule-content">
-                        <h3>守则四</h3>
-                        <p>你的游戏昵称永远固定。若你打开玩家列表，发现出现和你一模一样ID的陌生玩家，立刻下线，今日永久不要再登录本服。</p>
-                    </div>
+            </div>
+            <div class="rule-card scroll-item">
+                <span class="rule-num">4</span>
+                <div class="rule-text">
+                    <h3>守则四</h3>
+                    <p>出现与你同名陌生玩家即刻下线，当日不要再登录本服务器。</p>
                 </div>
             </div>
         </div>
-    </section>
-    
-    <footer>
-        <div class="container">
-            <p class="copyright">© 2026 生生生生生存 保留所有权利</p>
-        </div>
-    </footer>
-    
-    <script>
-        function 复制地址(文本) {
-            const 临时文本框 = document.createElement('textarea');
-            临时文本框.value = 文本;
-            document.body.appendChild(临时文本框);
-            临时文本框.select();
-            document.execCommand('copy');
-            document.body.removeChild(临时文本框);
-            const 按钮 = document.querySelector('.copy-btn');
-            let 原有文字 = 按钮.innerText;
-            按钮.innerText = '复制成功';
-            setTimeout(()=>按钮.innerText=原有文字,2000);
+    </div>
+</section>
+
+<footer>
+    <div class="container">© 2026 生生生生生存 保留所有权利</div>
+</footer>
+
+<script>
+// 复制功能
+function copyTxt(text){
+    let tmp = document.createElement('textarea');
+    tmp.value = text;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand('copy');
+    document.body.removeChild(tmp);
+    let btn = document.querySelector('.copy-btn');
+    let old = btn.innerText;
+    btn.innerText = "复制成功";
+    setTimeout(()=>btn.innerText=old,2000);
+}
+
+// 服务器状态检测
+const ip = "114.66.23.27";
+const port = 6031;
+async function checkServer(){
+    let online = 0,max = 20,isOn = false;
+    try{
+        let res = await fetch(`https://api.mcsrvstat.us/3/${ip}:${port}`);
+        let d = await res.json();
+        isOn = d.online || false;
+        if(isOn && d.players){
+            online = d.players.online||0;
+            max = d.players.max||20;
         }
-
-        const MC_IP = "114.66.23.27";
-        const MC_PORT = 6031;
-
-        async function updateMCStatus() {
-          try {
-            const res = await fetch(`https://api.mcsrvstat.us/2/${MC_IP}:${MC_PORT}`);
-            const data = await res.json();
-
-            const onlineBool = data.online === true;
-            const online = data.players?.online ?? 0;
-            const max = data.players?.max ?? 20;
-
-            document.getElementById("mc-players").innerText = `在线人数：${online}/${max}`;
-
-            const statusEl = document.getElementById("mc-status");
-            if (onlineBool) {
-              statusEl.innerText = "服务器状态：正常运行";
-              statusEl.className = "server-status status-online";
-            } else {
-              statusEl.innerText = "服务器状态：离线";
-              statusEl.className = "server-status status-offline";
+    }catch{
+        try{
+            let res2 = await fetch(`https://mcapi.us/server/status?ip=${ip}&port=${port}`);
+            let d2 = await res2.json();
+            isOn = d2.online||false;
+            if(isOn&&d2.players){
+                online = d2.players.online||0;
+                max = d2.players.max||20;
             }
-          } catch (e) {
-            document.getElementById("mc-players").innerText = "在线人数：获取失败";
-            document.getElementById("mc-status").innerText = "服务器状态：查询错误";
-          }
-        }
-        updateMCStatus();
-        setInterval(updateMCStatus, 60000);
+        }catch{}
+    }
+    document.getElementById("playerNum").innerText = `在线人数：${online}/${max}`;
+    let statDom = document.getElementById("serverStat");
+    if(isOn){
+        statDom.innerText = "服务器状态：正常运行";
+        statDom.className = "info-tag online";
+    }else{
+        statDom.innerText = "服务器状态：离线";
+        statDom.className = "info-tag offline";
+    }
+}
+checkServer();
+setInterval(checkServer,40000);
 
-        // 进出可视区域重复触发动画
-        const animateItems = document.querySelectorAll('.section-title, .feature-card, .rule-item');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(item => {
-                if(item.isIntersecting){
-                    item.classList.add('show');
-                }else{
-                    item.classList.remove('show');
-                }
-            });
-        },{threshold:0.1});
-
-        animateItems.forEach(el=>observer.observe(el));
-    </script>
-</body>
-</html>        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+// 滚动触发入场动画
+const scrollEle = document.querySelectorAll('.scroll-item');
+const io = new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{
+        if(en.isIntersecting){
+            en.target.classList.add('active');
+        }else{
+            en.target.classList.remove('active');
         }
-        
-        header {
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 20px 0;
-            text-align: center;
-            position: relative;
-        }
-        
-        header::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: #223318;
-            opacity: 0.4;
-            z-index: -1;
-        }
-        
-        .server-title {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            animation: breathe 3s ease-in-out infinite;
-        }
-
-        @keyframes breathe {
-            0%, 100% {
-                transform: scale(1);
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 10px rgba(76, 140, 43, 0.3);
-            }
-            50% {
-                transform: scale(1.02);
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(76, 140, 43, 0.6);
-            }
-        }
-        
-        .server-subtitle {
-            font-size: 1.2rem;
-            margin: 0 auto 20px;
-            background: rgba(0,0,0,0.3);
-            padding: 15px 25px;
-            border-radius: 5px;
-            display: inline-block;
-        }
-        
-        .banner-section {
-            padding: 40px 0;
-            text-align: center;
-        }
-        
-        .server-address {
-            margin: 20px auto;
-            background: rgba(0,0,0,0.3);
-            padding: 10px 20px;
-            border-radius: 4px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .address-text {
-            font-family: monospace;
-            font-size: 1.2rem;
-            color: var(--accent-color);
-        }
-        
-        .copy-btn {
-            background: var(--primary-color);
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-        .copy-btn:hover {
-            background: var(--secondary-color);
-        }
-        .copy-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .server-info-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .server-version,.player-count {
-            background: rgba(0,0,0,0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            color: var(--accent-color);
-            font-weight: bold;
-        }
-        .server-status.status-online {
-            color: #4CAF50;
-            border: 1px solid #4CAF50;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-        .server-status.status-offline {
-            color: #f44336;
-            border: 1px solid #f44336;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-        
-        .server-motd {
-            background: rgba(0,0,0,0.3);
-            padding: 20px;
-            border-radius: 4px;
-            max-width: 600px;
-            margin: 30px auto;
-        }
-        .server-motd h3 {
-            color: var(--accent-color);
-            margin-bottom: 10px;
-        }
-        
-        .features-section {
-            padding: 60px 0;
-            background: rgba(0,0,0,0.2);
-        }
-        .section-title {
-            font-size: 2rem;
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 30px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease;
-        }
-        .section-title.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .server-features {
-            list-style: none;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-        }
-        .server-feature {
-            background: rgba(0,0,0,0.3);
-            padding: 10px 20px;
-            border-radius: 30px;
-            border: 1px solid var(--primary-color);
-        }
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px,1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
-        .feature-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        .feature-card.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        }
-        .feature-icon {
-            font-size: 2rem;
-            color: var(--accent-color);
-            margin-bottom: 15px;
-        }
-        .feature-title {
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-        
-        .rules-section {
-            padding: 60px 0;
-        }
-        .rules-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
-            gap: 30px;
-        }
-        .rule-item {
-            display: flex;
-            gap: 15px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 8px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease;
-        }
-        .rule-item.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .rule-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-        .rule-content h3 {
-            color: var(--primary-color);
-            margin-bottom: 5px;
-        }
-        
-        footer {
-            background: rgba(0,0,0,0.5);
-            padding: 30px 0;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-        .copyright {
-            color: rgba(255,255,255,0.5);
-            margin-top: 15px;
-        }
-
-        @media (max-width: 768px) {
-            .server-title {font-size: 2.2rem;}
-            .rules-container {grid-template-columns: 1fr;}
-        }
-        @media (max-width: 480px) {
-            .server-title {font-size: 1.8rem;}
-            .server-address {flex-direction: column;}
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <div class="container">
-            <h1 class="server-title">生生生生生存</h1>
-            <p class="server-subtitle">原版生存这一块，原汁原味这一块</p>
-        </div>
-    </header>
-    
-    <section class="banner-section">
-        <div class="container">
-            <div class="server-address">
-                <span class="address-text">114.66.23.27:6031</span>
-                <button class="copy-btn" onclick="复制地址('114.66.23.27:6031')">复制地址</button>
-            </div>
-            
-            <div class="server-info-container">
-                <div class="server-version">游戏版本：26.1.2</div>
-                <div class="player-count" id="mc-players">在线人数：--/--</div>
-                <div class="server-status status-online" id="mc-status">服务器状态：检测中...</div>
-            </div>
-            
-            <div class="server-motd">
-                <h3>服务器简介</h3>
-                <div class="motd-content">
-                    超级无敌酷炫炸裂的原版生存<br>雷霆简介
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <section class="features-section">
-        <div class="container">
-            <h2 class="section-title">服务器特色</h2>
-            <ul class="server-features">
-                <li class="server-feature">原版生存</li>
-            </ul>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🏠</div>
-                    <h3 class="feature-title">和睦社群</h3>
-                    <p>氛围融洽的MC玩家聚集地</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🛡️</div>
-                    <h3 class="feature-title">专人管理</h3>
-                    <p>管理员在线维护公平游玩环境</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🚀</div>
-                    <h3 class="feature-title">稳定更新</h3>
-                    <p>紧跟版本内容，持续优化体验</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🌐</div>
-                    <h3 class="feature-title">低延迟运行</h3>
-                    <p>流畅游戏，极少卡顿掉线</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <section class="rules-section">
-        <div class="container">
-            <h2 class="section-title">服务器诡异守则</h2>
-            <div class="rules-container">
-                <div class="rule-item">
-                    <span class="rule-number">1</span>
-                    <div class="rule-content">
-                        <h3>守则一</h3>
-                        <p>服务器不存在匿名隐形玩家。若你在地图中发现方块被莫名放置、破坏、挪动，身边无任何玩家ID显示，立刻远离该区域，不要追查、不要溯源。</p>
-                    </div>
-                </div>
-                <div class="rule-item">
-                    <span class="rule-number">2</span>
-                    <div class="rule-content">
-                        <h3>守则二</h3>
-                        <p>正常玩家的移动、挖掘、放置方块均会对应音效。若你在空旷区域听到持续的走路声、挖土声、开门声，却看不到任何人，禁止四处张望探查，快速回到屋内，关闭所有出入口。</p>
-                    </div>
-                </div>
-                <div class="rule-item">
-                    <span class="rule-number">3</span>
-                    <div class="rule-content">
-                        <h3>守则三</h3>
-                        <p>服务器昼夜循环正常，不会静止、不会无限黑夜。若你发现月亮高悬不落、天空持续漆黑，立刻停止一切建造与探索，等待自然天亮即可，切勿外出打怪挖矿。</p>
-                    </div>
-                </div>
-                <div class="rule-item">
-                    <span class="rule-number">4</span>
-                    <div class="rule-content">
-                        <h3>守则四</h3>
-                        <p>你的游戏昵称永远固定。若你打开玩家列表，发现出现和你一模一样ID的陌生玩家，立刻下线，今日永久不要再登录本服。</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <footer>
-        <div class="container">
-            <p class="copyright">© 2026 生生生生生存 保留所有权利</p>
-        </div>
-    </footer>
-    
-    <script>
-        function 复制地址(文本) {
-            const 临时文本框 = document.createElement('textarea');
-            临时文本框.value = 文本;
-            document.body.appendChild(临时文本框);
-            临时文本框.select();
-            document.execCommand('copy');
-            document.body.removeChild(临时文本框);
-            const 按钮 = document.querySelector('.copy-btn');
-            let 原有文字 = 按钮.innerText;
-            按钮.innerText = '复制成功';
-            setTimeout(()=>按钮.innerText=原有文字,2000);
-        }
-
-        const MC_IP = "114.66.23.27";
-        const MC_PORT = 6031;
-
-        async function updateMCStatus() {
-          try {
-            const res = await fetch(`https://api.mcsrvstat.us/2/${MC_IP}:${MC_PORT}`);
-            const data = await res.json();
-
-            const onlineBool = data.online === true;
-            const online = data.players?.online ?? 0;
-            const max = data.players?.max ?? 20;
-
-            document.getElementById("mc-players").innerText = `在线人数：${online}/${max}`;
-
-            const statusEl = document.getElementById("mc-status");
-            if (onlineBool) {
-              statusEl.innerText = "服务器状态：正常运行";
-              statusEl.className = "server-status status-online";
-            } else {
-              statusEl.innerText = "服务器状态：离线";
-              statusEl.className = "server-status status-offline";
-            }
-          } catch (e) {
-            document.getElementById("mc-players").innerText = "在线人数：获取失败";
-            document.getElementById("mc-status").innerText = "服务器状态：查询错误";
-          }
-        }
-        updateMCStatus();
-        setInterval(updateMCStatus, 60000);
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.section-title, .feature-card, .rule-item').forEach(el => {
-            observer.observe(el);
-        });
-    </script>
+    });
+},{threshold:0.15});
+scrollEle.forEach(el=>io.observe(el));
+</script>
 </body>
 </html>
