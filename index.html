@@ -5,7 +5,15 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
     <title>生生生生生存</title>
     <style>
-        * {margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+        * {
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            -webkit-tap-highlight-color:transparent; /* 去掉手机点击灰块 */
+            -webkit-appearance:none;
+            -moz-appearance:none;
+            appearance:none;
+        }
         :root {
             --primary: #4c8c2b;
             --secondary: #386c20;
@@ -14,13 +22,13 @@
             --text: #fff;
         }
         body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: "Microsoft Yahei",sans-serif;
-            line-height: 1.6;
-            font-size: 16px;
+            background:var(--bg);
+            color:var(--text);
+            font-family:"Microsoft Yahei",sans-serif;
+            line-height:1.6;
+            font-size:16px;
         }
-        .container {max-width: 1200px;margin: 0 auto;padding: 0 15px;}
+        .container {max-width:1200px;margin:0 auto;padding:0 15px;}
         header {padding:20px 0;text-align:center;background:rgba(0,0,0,0.5);position:relative;}
         header::before {content:"";position:absolute;inset:0;background:#223318;opacity:0.4;z-index:-1;}
         .server-title {font-size:clamp(2rem,5vw,3rem);margin-bottom:10px;color:var(--primary);animation:breath 3s ease-in-out infinite;}
@@ -29,8 +37,29 @@
         .banner {padding:30px 0;text-align:center;}
         .server-addr {margin:20px auto;padding:10px 15px;background:rgba(0,0,0,0.3);border-radius:4px;display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;}
         .addr-text {color:var(--accent);font-size:1.1rem;font-family:monospace;}
-        .copy-btn,.refresh-btn {background:var(--primary);color:#fff;border:none;padding:7px 14px;border-radius:4px;cursor:pointer;transition:all 0.2s ease;font-size:15px;}
-        .copy-btn:hover,.refresh-btn:hover {background:var(--secondary);}
+
+        /* 修复按钮样式 */
+        .copy-btn,.refresh-btn {
+            background:var(--primary);
+            color:#fff;
+            border:none;
+            padding:7px 14px;
+            border-radius:4px;
+            cursor:pointer;
+            transition:all 0.2s ease;
+            font-size:15px;
+            touch-action:manipulation; /* 移动端立即响应点击 */
+        }
+        .copy-btn:active,.refresh-btn:active {
+            background:var(--secondary);
+            opacity:0.85;
+        }
+        /* 关键：去掉 focus 高亮 */
+        .copy-btn:focus,.refresh-btn:focus {
+            outline:none;
+            box-shadow:none;
+        }
+
         .info-row {display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:15px 0;}
         .info-tag {background:rgba(0,0,0,0.2);color:var(--accent);padding:5px 12px;border-radius:20px;font-weight:bold;font-size:15px;}
         .online {color:#4CAF50;border:1px solid #4CAF50;}
@@ -38,7 +67,7 @@
         .unknown {color:#ff9800;border:1px solid #ff9800;}
         .desc-box {max-width:600px;margin:25px auto;padding:18px;background:rgba(0,0,0,0.3);border-radius:4px;}
         .desc-box h3 {color:var(--accent);margin-bottom:8px;}
-        .scroll-item {opacity:0;transform:translateY(6px);transition:opacity 0.45s ease,transform 0.45s ease;will-change:transform,opacity;}
+        .scroll-item {opacity:0;transform:translateY(6px);transition:opacity 0.45s ease,transform 0.45s ease;}
         .scroll-item.active {opacity:1;transform:translateY(0);}
         .feature-wrap {padding:45px 0;background:rgba(0,0,0,0.2);}
         .sec-title {text-align:center;font-size:clamp(1.5rem,3vw,2rem);color:var(--primary);margin-bottom:25px;}
@@ -69,13 +98,13 @@
     <div class="container">
         <div class="server-addr">
             <span class="addr-text">114.66.23.27:6031</span>
-            <button class="copy-btn" onclick="copyTxt('114.66.23.27:6031')">复制地址</button>
-            <button class="refresh-btn" onclick="checkServer()">手动刷新状态</button>
+            <button class="copy-btn" onclick="copyTxt(this,'114.66.23.27:6031')">复制地址</button>
+            <button class="refresh-btn" onclick="checkServer(this)">手动刷新状态</button>
         </div>
         <div class="info-row">
             <div class="info-tag">游戏版本：26.1.2</div>
             <div class="info-tag" id="playerNum">在线人数：--</div>
-            <div class="info-tag" id="serverStat">服务器状态：检测中</div>
+            <div class="info-tag" id="serverStat">服务器状态：刷新中</div>
         </div>
         <div class="desc-box">
             <h3>服务器简介</h3>
@@ -152,12 +181,15 @@
     <div class="container">© 2026 生生生生生存 保留所有权利</div>
 </footer>
 <script>
-function copyTxt(text){
+// 复制：结束后主动失去焦点
+function copyTxt(btn, text){
     navigator.clipboard.writeText(text).then(function(){
-        var btn = document.querySelector('.copy-btn');
         var old = btn.innerText;
         btn.innerText = "复制成功";
-        setTimeout(function(){btn.innerText=old},2000);
+        setTimeout(function(){
+            btn.innerText=old;
+            btn.blur(); // 强制失焦，避免一直暗色
+        },2000);
     }).catch(function(){
         var tmp = document.createElement('textarea');
         tmp.value = text;
@@ -165,71 +197,55 @@ function copyTxt(text){
         tmp.select();
         document.execCommand('copy');
         document.body.removeChild(tmp);
+        btn.blur();
     });
 }
+
 var ip = "114.66.23.27";
 var port = 6031;
-function checkServer(){
-    var online = null,max=null,isOn=false,getSuccess=false;
+
+// 刷新：结束后也失焦
+function checkServer(btn){
     var statDom = document.getElementById("serverStat");
     var playerDom = document.getElementById("playerNum");
-    statDom.innerText = "服务器状态：刷新中...";
+    statDom.innerText = "服务器状态：刷新中";
     statDom.className = "info-tag unknown";
-    try{
-        fetch("https://api.mcstatus.io/v2/status/java/"+ip+":"+port)
-        .then(function(res){return res.json();})
-        .then(function(d){
-            isOn = d.online;
-            if(isOn && d.players){
-                online = d.players.online;
-                max = d.players.max;
-                getSuccess = true;
-            }
-            renderStatus();
-        }).catch(function(){renderStatus();});
-    }catch(e){renderStatus();}
-    function renderStatus(){
-        if(!isOn){
-            playerDom.innerText = "在线人数：暂无";
-            statDom.innerText = "服务器状态：离线";
-            statDom.className = "info-tag offline";
-        }else if(getSuccess && online!==null){
-            playerDom.innerText = "在线人数："+online+"/"+max;
+    fetch("https://api.mcstatus.io/v2/status/java/"+ip+":"+port)
+    .then(function(res){return res.json();})
+    .then(function(d){
+        if(d.online){
+            playerDom.innerText = "在线人数："+d.players.online+"/"+d.players.max;
             statDom.innerText = "服务器状态：正常运行";
             statDom.className = "info-tag online";
         }else{
-            playerDom.innerText = "在线人数：获取失败";
-            statDom.innerText = "服务器状态：在线(数据异常)";
-            statDom.className = "info-tag unknown";
+            playerDom.innerText = "在线人数：暂无";
+            statDom.innerText = "服务器状态：离线";
+            statDom.className = "info-tag offline";
         }
-    }
+    })
+    .catch(function(){
+        playerDom.innerText = "在线人数：获取失败";
+        statDom.innerText = "服务器状态：在线异常";
+        statDom.className = "info-tag unknown";
+    }).finally(function(){
+        if(btn) btn.blur(); // 不管成功失败，都失焦
+    });
 }
+
 checkServer();
 setInterval(checkServer,35000);
-var scrollEle = document.querySelectorAll('.scroll-item');
-var timerMap = new WeakMap();
-var activeMap = new WeakMap();
-var observer = new IntersectionObserver(function(entries){
-    entries.forEach(function(item){
-        var el = item.target;
-        if(item.isIntersecting){
-            if(timerMap.has(el)) clearTimeout(timerMap.get(el));
-            el.classList.add('active');
-            activeMap.set(el,true);
-            return;
+
+// 极简基础监听
+var items = document.getElementsByClassName("scroll-item");
+var obs = new IntersectionObserver(function(ent){
+    for(var i=0;i<ent.length;i++){
+        if(ent[i].isIntersecting){
+            ent[i].target.classList.add("active");
         }
-        if(timerMap.has(el)) clearTimeout(timerMap.get(el));
-        var t = setTimeout(function(){
-            if(activeMap.get(el)){
-                el.classList.remove('active');
-                activeMap.set(el,false);
-            }
-        },400);
-        timerMap.set(el,t);
-    });
-},{rootMargin:"600px 0px 900px 0px",threshold:0.05});
-for(var i=0;i<scrollEle.length;i++){
-    observer.observe(scrollEle[i]);
+    }
+},{rootMargin:"200px 0px",threshold:0});
+for(var j=0;j<items.length;j++){
+    obs.observe(items[j]);
 }
 </script>
 </body>
