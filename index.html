@@ -1,15 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>生生生生生存</title>
     <meta name="description" content="原版生存这一块，原汁原味这一块">
-    <meta name="keywords" content="minecraft, server, 生生生生生存, multiplayer, gaming">
-    <meta property="og:title" content="生生生生生存">
-    <meta property="og:description" content="原版生存这一块，原汁原味这一块">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://www.minecraftplot.com/banner/114.66.23.27:6031/default/white?type=java">
+    <meta name="keywords" content="我的世界,服务器,生生生生生存,多人联机">
     <style>
         :root {
             --primary-color: #4c8c2b;
@@ -26,7 +22,7 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: "Microsoft Yahei", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
@@ -35,6 +31,337 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: #223318;
+            opacity: 0.4;
+            z-index: -1;
+        }
+        
+        .server-title {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .server-subtitle {
+            font-size: 1.2rem;
+            margin: 0 auto 20px;
+            background: rgba(0,0,0,0.3);
+            padding: 15px 25px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        
+        .banner-section {
+            padding: 40px 0;
+            text-align: center;
+        }
+        
+        .server-address {
+            margin: 20px auto;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .address-text {
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+        }
+        
+        .copy-btn {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .copy-btn:hover {
+            background: var(--secondary-color);
+        }
+        
+        .server-info-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .server-version,.player-count {
+            background: rgba(0,0,0,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        .server-status.status-online {
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .server-motd {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 4px;
+            max-width: 600px;
+            margin: 30px auto;
+        }
+        .server-motd h3 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+        
+        .features-section {
+            padding: 60px 0;
+            background: rgba(0,0,0,0.2);
+        }
+        .section-title {
+            font-size: 2rem;
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+        .server-features {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+        .server-feature {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid var(--primary-color);
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px,1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+        }
+        .feature-title {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .rules-section {
+            padding: 60px 0;
+        }
+        .rules-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+            gap: 30px;
+        }
+        .rule-item {
+            display: flex;
+            gap: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .rule-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .rule-content h3 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        footer {
+            background: rgba(0,0,0,0.5);
+            padding: 30px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .footer-links a {
+            color: var(--accent-color);
+            margin: 0 10px;
+            text-decoration: none;
+        }
+        .copyright {
+            color: rgba(255,255,255,0.5);
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .server-title {font-size: 2.2rem;}
+            .rules-container {grid-template-columns: 1fr;}
+        }
+        @media (max-width: 480px) {
+            .server-title {font-size: 1.8rem;}
+            .server-address {flex-direction: column;}
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 class="server-title">生生生生生存</h1>
+            <p class="server-subtitle">原版生存玩法，体验纯粹冒险</p>
+        </div>
+    </header>
+    
+    <section class="banner-section">
+        <div class="container">
+            <div class="server-address">
+                <span class="address-text">114.66.23.27:6031</span>
+                <button class="copy-btn" onclick="复制地址('114.66.23.27:6031')">复制地址</button>
+            </div>
+            
+            <div class="server-info-container">
+                <div class="server-version">游戏版本：26.1.2</div>
+                <div class="player-count">在线人数：0/20</div>
+                <div class="server-status status-online">服务器状态：正常运行</div>
+            </div>
+            
+            <div class="server-motd">
+                <h3>服务器简介</h3>
+                <div class="motd-content">
+                    趣味十足的原版生存服务器，开启属于你的冒险旅程
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title">服务器特色</h2>
+            <ul class="server-features">
+                <li class="server-feature">原版生存</li>
+            </ul>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🏠</div>
+                    <h3 class="feature-title">和睦社群</h3>
+                    <p>氛围和谐友善，玩家轻松共处游玩</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3 class="feature-title">专人管理</h3>
+                    <p>管理员实时在线，维护公平游戏环境</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3 class="feature-title">持续更新</h3>
+                    <p>紧跟游戏版本，不断丰富游玩内容</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3 class="feature-title">运行稳定</h3>
+                    <p>低延迟流畅对局，减少卡顿掉线问题</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="rules-section">
+        <div class="container">
+            <h2 class="section-title">服务器诡异守则</h2>
+            <div class="rules-container">
+                <div class="rule-item">
+                    <span class="rule-number">1</span>
+                    <div class="rule-content">
+                        <h3>守则一</h3>
+                        <p>服务器不存在匿名隐形玩家。若你在地图中发现方块被莫名放置、破坏、挪动，身边无任何玩家ID显示，立刻远离该区域，不要追查、不要溯源。</p>
+                    </div>
+                </div>
+                <div class="rule-item">
+                    <span class="rule-number">2</span>
+                    <div class="rule-content">
+                        <h3>守则二</h3>
+                        <p>正常玩家的移动、挖掘、放置方块均会对应音效。若你在空旷区域听到持续的走路声、挖土声、开门声，却看不到任何人，禁止四处张望探查，快速回到屋内，关闭所有出入口。</p>
+                    </div>
+                </div>
+                <div class="rule-item">
+                    <span class="rule-number">3</span>
+                    <div class="rule-content">
+                        <h3>守则三</h3>
+                        <p>服务器昼夜循环正常，不会静止、不会无限黑夜。若你发现月亮高悬不落、天空持续漆黑，立刻停止一切建造与探索，等待自然天亮即可，切勿外出打怪挖矿。</p>
+                    </div>
+                </div>
+                <div class="rule-item">
+                    <span class="rule-number">4</span>
+                    <div class="rule-content">
+                        <h3>守则四</h3>
+                        <p>你的游戏昵称永远固定。若你打开玩家列表，发现出现和你一模一样ID的陌生玩家，立刻下线，今日永久不要再登录本服。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="container">
+            <p class="copyright">© 2026 生生生生生存 保留所有权利</p>
+        </div>
+    </footer>
+    
+    <script>
+        function 复制地址(文本) {
+            const 临时文本框 = document.createElement('textarea');
+            临时文本框.value = 文本;
+            document.body.appendChild(临时文本框);
+            临时文本框.select();
+            document.execCommand('copy');
+            document.body.removeChild(临时文本框);
+            const 按钮 = document.querySelector('.copy-btn');
+            let 原有文字 = 按钮.innerText;
+            按钮.innerText = '复制成功';
+            setTimeout(()=>按钮.innerText=原有文字,2000);
+        }
+    </script>
+</body>
+</html>            margin: 0 auto;
             padding: 0 20px;
         }
         
