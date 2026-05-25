@@ -74,10 +74,11 @@
         }
         .desc-box h3 {color:var(--accent);margin-bottom:8px;}
 
+        /* 关键：初始位移从25px改成8px，回弹距离大幅缩小 */
         .scroll-item {
             opacity: 0;
-            transform: translateY(25px);
-            transition: opacity 0.7s ease, transform 0.7s ease;
+            transform: translateY(8px); /* 原来25px，现在很小 */
+            transition: opacity 0.5s ease, transform 0.5s ease; /* 时间也略短一点，更利落 */
             will-change: transform, opacity;
         }
         .scroll-item.active {
@@ -234,16 +235,23 @@
 
 <script>
 function copyTxt(text){
-    let tmp = document.createElement('textarea');
-    tmp.value = text;
-    document.body.appendChild(tmp);
-    tmp.select();
-    document.execCommand('copy');
-    document.body.removeChild(tmp);
-    let btn = document.querySelector('.copy-btn');
-    let old = btn.innerText;
-    btn.innerText = "复制成功";
-    setTimeout(()=>btn.innerText=old,2000);
+    navigator.clipboard.writeText(text).then(()=>{
+        let btn = document.querySelector('.copy-btn');
+        let old = btn.innerText;
+        btn.innerText = "复制成功";
+        setTimeout(()=>btn.innerText=old,2000);
+    }).catch(()=>{
+        let tmp = document.createElement('textarea');
+        tmp.value = text;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tmp);
+        let btn = document.querySelector('.copy-btn');
+        let old = btn.innerText;
+        btn.innerText = "复制成功";
+        setTimeout(()=>btn.innerText=old,2000);
+    });
 }
 
 const ip = "114.66.23.27";
@@ -291,17 +299,28 @@ checkServer();
 setInterval(checkServer,35000);
 
 const scrollEle = document.querySelectorAll('.scroll-item');
-// 双阈值区间，临界位置防抖，来回滑动均可触发动画且无抽搐
-const io = new IntersectionObserver((entries)=>{
-    entries.forEach(en=>{
-        if(en.isIntersecting){
-            en.target.classList.add('active');
+const timerCache = new WeakMap();
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(item => {
+        const el = item.target;
+        if(timerCache.has(el)) clearTimeout(timerCache.get(el));
+
+        if(item.isIntersecting){
+            el.classList.add('active');
         }else{
-            en.target.classList.remove('active');
+            let t = setTimeout(() => {
+                el.classList.remove('active');
+            }, 650);
+            timerCache.set(el, t);
         }
     });
-},{threshold:[0.1,0.4]});
-scrollEle.forEach(el=>io.observe(el));
+},{
+    rootMargin: "600px 0px 900px 0px", // 保持下方超大检测范围
+    threshold: 0.05
+});
+
+scrollEle.forEach(el => observer.observe(el));
 </script>
 </body>
 </html>
