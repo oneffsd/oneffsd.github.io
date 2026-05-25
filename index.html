@@ -253,11 +253,47 @@
                 <button class="copy-btn" onclick="复制地址('114.66.23.27:6031')">复制地址</button>
             </div>
             
-            <div class="server-info-container">
-                <div class="server-version">游戏版本：26.1.2</div>
-                <div class="player-count">在线人数：0/20</div>
-                <div class="server-status status-online">服务器状态：正常运行</div>
-            </div>
+           <div class="server-info-container">
+    <div class="server-version">游戏版本：26.1.2</div>
+    <div class="player-count" id="mc-players">在线人数：--/--</div>
+    <div class="server-status status-online" id="mc-status">服务器状态：检测中...</div>
+</div>
+
+<script>
+// 你的服务器
+const MC_IP = "114.66.23.27";
+const MC_PORT = 6031;
+
+// 更新一次
+async function updateMCStatus() {
+  try {
+    const res = await fetch(`https://mcapi.us/server/status?ip=${MC_IP}&port=${MC_PORT}`);
+    const data = await res.json();
+
+    const online = data.players?.online ?? 0;
+    const max = data.players?.max ?? 20;
+    const onlineBool = data.online === true;
+
+    document.getElementById("mc-players").innerText = `在线人数：${online}/${max}`;
+
+    const statusEl = document.getElementById("mc-status");
+    if (onlineBool) {
+      statusEl.innerText = "服务器状态：正常运行";
+      statusEl.className = "server-status status-online";
+    } else {
+      statusEl.innerText = "服务器状态：离线";
+      statusEl.className = "server-status status-offline";
+    }
+  } catch (e) {
+    document.getElementById("mc-players").innerText = "在线人数：获取失败";
+    document.getElementById("mc-status").innerText = "服务器状态：查询错误";
+  }
+}
+
+// 立即执行 + 每60秒刷新一次
+updateMCStatus();
+setInterval(updateMCStatus, 60000);
+</script>
             
             <div class="server-motd">
                 <h3>服务器简介</h3>
