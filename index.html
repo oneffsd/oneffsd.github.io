@@ -9,7 +9,7 @@
             margin:0;
             padding:0;
             box-sizing:border-box;
-            -webkit-tap-highlight-color:transparent; /* 去掉手机点击灰块 */
+            -webkit-tap-highlight-color:transparent;
             -webkit-appearance:none;
             -moz-appearance:none;
             appearance:none;
@@ -38,7 +38,6 @@
         .server-addr {margin:20px auto;padding:10px 15px;background:rgba(0,0,0,0.3);border-radius:4px;display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;}
         .addr-text {color:var(--accent);font-size:1.1rem;font-family:monospace;}
 
-        /* 修复按钮样式 */
         .copy-btn,.refresh-btn {
             background:var(--primary);
             color:#fff;
@@ -48,13 +47,12 @@
             cursor:pointer;
             transition:all 0.2s ease;
             font-size:15px;
-            touch-action:manipulation; /* 移动端立即响应点击 */
+            touch-action:manipulation;
         }
         .copy-btn:active,.refresh-btn:active {
             background:var(--secondary);
             opacity:0.85;
         }
-        /* 关键：去掉 focus 高亮 */
         .copy-btn:focus,.refresh-btn:focus {
             outline:none;
             box-shadow:none;
@@ -67,8 +65,24 @@
         .unknown {color:#ff9800;border:1px solid #ff9800;}
         .desc-box {max-width:600px;margin:25px auto;padding:18px;background:rgba(0,0,0,0.3);border-radius:4px;}
         .desc-box h3 {color:var(--accent);margin-bottom:8px;}
-        .scroll-item {opacity:0;transform:translateY(6px);transition:opacity 0.45s ease,transform 0.45s ease;}
-        .scroll-item.active {opacity:1;transform:translateY(0);}
+
+        /* 淡入动画加强版 */
+        .scroll-item {
+            opacity:0;
+            transform:translateY(15px); /* 更大初始位移 */
+            transition:opacity 0.6s ease-out, transform 0.6s ease-out; /* 更长、更柔和 */
+        }
+        .scroll-item.active {
+            opacity:1;
+            transform:translateY(0);
+        }
+
+        /* 卡片逐个错开 */
+        .card-grid .scroll-item:nth-child(1) { transition-delay:0ms; }
+        .card-grid .scroll-item:nth-child(2) { transition-delay:100ms; }
+        .card-grid .scroll-item:nth-child(3) { transition-delay:200ms; }
+        .card-grid .scroll-item:nth-child(4) { transition-delay:300ms; }
+
         .feature-wrap {padding:45px 0;background:rgba(0,0,0,0.2);}
         .sec-title {text-align:center;font-size:clamp(1.5rem,3vw,2rem);color:var(--primary);margin-bottom:25px;}
         .tag-list {display:flex;flex-wrap:wrap;justify-content:center;gap:12px;list-style:none;}
@@ -164,7 +178,7 @@
                 <span class="rule-num">3</span>
                 <div class="rule-text">
                     <h3>守则三</h3>
-                    <p>昼夜循环异常天色漆黑时，停止探索建造，静待天亮，不要外出冒险挖矿。</p>
+                    <p>昼夜循环异常天色漆黑时，停止探索建造，静待天亮，不要外出挖矿。</p>
                 </div>
             </div>
             <div class="rule-card scroll-item">
@@ -181,14 +195,13 @@
     <div class="container">© 2026 生生生生生存 保留所有权利</div>
 </footer>
 <script>
-// 复制：结束后主动失去焦点
 function copyTxt(btn, text){
     navigator.clipboard.writeText(text).then(function(){
         var old = btn.innerText;
         btn.innerText = "复制成功";
         setTimeout(function(){
             btn.innerText=old;
-            btn.blur(); // 强制失焦，避免一直暗色
+            btn.blur();
         },2000);
     }).catch(function(){
         var tmp = document.createElement('textarea');
@@ -204,7 +217,6 @@ function copyTxt(btn, text){
 var ip = "114.66.23.27";
 var port = 6031;
 
-// 刷新：结束后也失焦
 function checkServer(btn){
     var statDom = document.getElementById("serverStat");
     var playerDom = document.getElementById("playerNum");
@@ -228,22 +240,30 @@ function checkServer(btn){
         statDom.innerText = "服务器状态：在线异常";
         statDom.className = "info-tag unknown";
     }).finally(function(){
-        if(btn) btn.blur(); // 不管成功失败，都失焦
+        if(btn) btn.blur();
     });
 }
 
-checkServer();
-setInterval(checkServer,35000);
+// 页面加载完成延迟执行
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        checkServer();
+        setInterval(checkServer, 35000);
+    }, 500); 
+});
 
-// 极简基础监听
 var items = document.getElementsByClassName("scroll-item");
 var obs = new IntersectionObserver(function(ent){
     for(var i=0;i<ent.length;i++){
         if(ent[i].isIntersecting){
             ent[i].target.classList.add("active");
+            obs.unobserve(ent[i].target); // 只动一次
         }
     }
-},{rootMargin:"200px 0px",threshold:0});
+},{
+    rootMargin:"0px",
+    threshold:0.1 // 10%可见就触发
+});
 for(var j=0;j<items.length;j++){
     obs.observe(items[j]);
 }
