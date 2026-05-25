@@ -64,6 +64,7 @@
         }
         .online {color:#4CAF50;border:1px solid #4CAF50;}
         .offline {color:#f44336;border:1px solid #f44336;}
+        .unknown {color:#ff9800;border:1px solid #ff9800;}
         .desc-box {
             max-width:600px;margin:30px auto;padding:20px;
             background:rgba(0,0,0,0.3);border-radius:4px;
@@ -154,7 +155,7 @@
         </div>
         <div class="info-row">
             <div class="info-tag">游戏版本：26.1.2</div>
-            <div class="info-tag" id="playerNum">在线人数：--/--</div>
+            <div class="info-tag" id="playerNum">在线人数：--</div>
             <div class="info-tag" id="serverStat">服务器状态：检测中</div>
         </div>
         <div class="desc-box">
@@ -251,40 +252,48 @@ function copyTxt(text){
 
 const ip = "114.66.23.27";
 const port = 6031;
+
 async function checkServer(){
-    let online = 0,max = 20,isOn = false;
+    let online = null;
+    let max = null;
+    let isOn = false;
+    let getSuccess = false;
+
     document.getElementById("serverStat").innerText = "服务器状态：刷新中...";
+    document.getElementById("serverStat").className = "info-tag unknown";
+
     try{
-        let res = await fetch(`https://api.mcsrvstat.us/3/${ip}:${port}`);
+        // 更换为低延迟的 mcstatus.io 接口
+        let res = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}:${port}`);
         let d = await res.json();
-        isOn = d.online || false;
+        isOn = d.online;
         if(isOn && d.players){
-            online = d.players.online||0;
-            max = d.players.max||20;
+            online = d.players.online;
+            max = d.players.max;
+            getSuccess = true;
         }
-    }catch{
-        try{
-            let res2 = await fetch(`https://mcapi.us/server/status?ip=${ip}&port=${port}`);
-            let d2 = await res2.json();
-            isOn = d2.online||false;
-            if(isOn&&d2.players){
-                online = d2.players.online||0;
-                max = d2.players.max||20;
-            }
-        }catch{}
-    }
-    document.getElementById("playerNum").innerText = `在线人数：${online}/${max}`;
-    let statDom = document.getElementById("serverStat");
-    if(isOn){
+    }catch{}
+
+    const playerDom = document.getElementById("playerNum");
+    const statDom = document.getElementById("serverStat");
+
+    if(!isOn){
+        playerDom.innerText = "在线人数：暂无";
+        statDom.innerText = "服务器状态：离线";
+        statDom.className = "info-tag offline";
+    }else if(getSuccess && online !== null){
+        playerDom.innerText = `在线人数：${online}/${max}`;
         statDom.innerText = "服务器状态：正常运行";
         statDom.className = "info-tag online";
     }else{
-        statDom.innerText = "服务器状态：离线";
-        statDom.className = "info-tag offline";
+        playerDom.innerText = "在线人数：获取失败";
+        statDom.innerText = "服务器状态：在线(数据异常)";
+        statDom.className = "info-tag unknown";
     }
 }
+
 checkServer();
-setInterval(checkServer,40000);
+setInterval(checkServer,35000);
 
 const scrollEle = document.querySelectorAll('.scroll-item');
 const io = new IntersectionObserver((entries)=>{
