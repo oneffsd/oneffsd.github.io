@@ -21,7 +21,6 @@
         }
         .container {max-width: 1200px;margin: 0 auto;padding: 0 20px;}
 
-        /* 头部呼吸动画 */
         header {
             padding: 20px 0;
             text-align: center;
@@ -45,20 +44,19 @@
             background:rgba(0,0,0,0.3);border-radius:5px;display:inline-block;
         }
 
-        /* 服务器信息区 */
         .banner {padding:40px 0;text-align:center;}
         .server-addr {
             margin:20px auto;padding:10px 20px;
             background:rgba(0,0,0,0.3);border-radius:4px;
-            display:inline-flex;gap:10px;align-items:center;
+            display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;
         }
         .addr-text {color:var(--accent);font-size:1.2rem;font-family:monospace;}
-        .copy-btn {
+        .copy-btn,.refresh-btn {
             background:var(--primary);color:#fff;border:none;
             padding:8px 16px;border-radius:4px;cursor:pointer;
             transition:0.2s;
         }
-        .copy-btn:hover {background:var(--secondary);}
+        .copy-btn:hover,.refresh-btn:hover {background:var(--secondary);}
         .info-row {display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:15px 0;}
         .info-tag {
             background:rgba(0,0,0,0.2);color:var(--accent);
@@ -72,7 +70,6 @@
         }
         .desc-box h3 {color:var(--accent);margin-bottom:10px;}
 
-        /* 滚动入场基础样式 */
         .scroll-item {
             opacity: 0;
             transform: translateY(30px);
@@ -83,7 +80,6 @@
             transform: translateY(0);
         }
 
-        /* 特色卡片 + 悬停上滑 */
         .feature-wrap {padding:60px 0;background:rgba(0,0,0,0.2);}
         .sec-title {text-align:center;font-size:2rem;color:var(--primary);margin-bottom:30px;}
         .tag-list {display:flex;flex-wrap:wrap;justify-content:center;gap:15px;list-style:none;}
@@ -101,7 +97,6 @@
             border:1px solid rgba(255,255,255,0.1);border-radius:8px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        /* 鼠标悬浮上滑 */
         .feat-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 8px 18px rgba(0,0,0,0.35);
@@ -109,7 +104,6 @@
         .card-icon {font-size:2rem;color:var(--accent);margin-bottom:15px;}
         .card-name {color:var(--primary);margin-bottom:10px;}
 
-        /* 规则卡片悬停 */
         .rule-wrap {padding:60px 0;}
         .rule-grid {
             display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
@@ -134,14 +128,12 @@
 
         footer {padding:30px 0;text-align:center;font-size:0.9rem;color:rgba(255,255,255,0.5);}
 
-        /* 适配 */
         @media (max-width:768px){
             .server-title{font-size:2.2rem}
             .rule-grid{grid-template-columns:1fr}
         }
         @media (max-width:480px){
             .server-title{font-size:1.8rem}
-            .server-addr{flex-direction:column}
         }
     </style>
 </head>
@@ -158,6 +150,7 @@
         <div class="server-addr">
             <span class="addr-text">114.66.23.27:6031</span>
             <button class="copy-btn" onclick="copyTxt('114.66.23.27:6031')">复制地址</button>
+            <button class="refresh-btn" onclick="checkServer()">手动刷新状态</button>
         </div>
         <div class="info-row">
             <div class="info-tag">游戏版本：26.1.2</div>
@@ -243,7 +236,6 @@
 </footer>
 
 <script>
-// 复制功能
 function copyTxt(text){
     let tmp = document.createElement('textarea');
     tmp.value = text;
@@ -257,11 +249,11 @@ function copyTxt(text){
     setTimeout(()=>btn.innerText=old,2000);
 }
 
-// 服务器状态检测
 const ip = "114.66.23.27";
 const port = 6031;
 async function checkServer(){
     let online = 0,max = 20,isOn = false;
+    document.getElementById("serverStat").innerText = "服务器状态：刷新中...";
     try{
         let res = await fetch(`https://api.mcsrvstat.us/3/${ip}:${port}`);
         let d = await res.json();
@@ -294,7 +286,6 @@ async function checkServer(){
 checkServer();
 setInterval(checkServer,40000);
 
-// 滚动触发入场动画
 const scrollEle = document.querySelectorAll('.scroll-item');
 const io = new IntersectionObserver((entries)=>{
     entries.forEach(en=>{
