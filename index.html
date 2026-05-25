@@ -35,7 +35,6 @@
         .banner {padding:30px 0;text-align:center;}
         .server-addr {margin:20px auto;padding:10px 15px;background:rgba(0,0,0,0.3);border-radius:4px;display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;}
         .addr-text {color:var(--accent);font-size:1.1rem;font-family:monospace;}
-        /* 修改后的按钮基础样式 */
         .copy-btn, .refresh-btn {
             background: var(--primary);
             color: #fff;
@@ -49,28 +48,20 @@
             user-select: none;
             touch-action: manipulation;
         }
-
-        /* 桌面端悬停效果 */
         @media (hover: hover) {
             .copy-btn:hover, .refresh-btn:hover {
                 filter: brightness(1.1);
                 transform: translateY(-2px);
             }
         }
-
-        /* 点击按压反馈 */
         .copy-btn:active, .refresh-btn:active {
             transform: scale(0.92);
             filter: brightness(0.9);
         }
-
-        /* 成功状态样式 */
         .copy-btn.success-state {
             background: var(--success) !important;
             transform: scale(1.05);
         }
-
-        /* 移动端卡片点击反馈 */
         .feat-card:active, .rule-card:active {
             background: rgba(255,255,255,0.1);
             transform: scale(0.98);
@@ -209,7 +200,6 @@
 </footer>
 
 <script>
-// 统一配置区，修改信息只改这里
 const serverConfig = {
     ip: "114.66.23.27",
     port: 6031,
@@ -236,7 +226,6 @@ function copyTxt(btn, text) {
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text).then(doCopy).catch(() => {
             fallbackCopy(text, doCopy);
-            alert("复制接口异常，已尝试手动复制");
         });
     } else {
         fallbackCopy(text, doCopy);
@@ -251,13 +240,10 @@ function fallbackCopy(text, callback) {
     try {
         document.execCommand('copy');
         callback();
-    } catch (err) {
-        alert("复制失败，请手动记录地址");
-    }
+    } catch (err) {}
     document.body.removeChild(textArea);
 }
 
-// 状态检测
 function checkServer(){
     const statDom = document.getElementById("serverStat");
     const playerDom = document.getElementById("playerNum");
@@ -276,11 +262,9 @@ function checkServer(){
         }).catch(() => {
             statDom.innerText = "状态：超时";
             statDom.className = "info-tag unknown";
-            alert("服务器状态查询失败，请稍后重试");
         });
 }
 
-// 绑定刷新按钮
 document.querySelectorAll('.refresh-btn')[0].addEventListener('click',checkServer);
 
 window.addEventListener('load', () => {
@@ -288,7 +272,6 @@ window.addEventListener('load', () => {
     setInterval(checkServer, 35000);
 });
 
-// 滚动动画
 const obs = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
