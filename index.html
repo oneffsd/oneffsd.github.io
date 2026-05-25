@@ -2,11 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 强制移动端适配，禁止缩放 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>生生生生生存</title>
     <style>
-        /* 全局重置，抹平浏览器默认差异 */
         * {margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
         :root {
             --primary: #4c8c2b;
@@ -76,11 +74,11 @@
         }
         .desc-box h3 {color:var(--accent);margin-bottom:8px;}
 
-        /* 兼容滚动入场动画 */
         .scroll-item {
             opacity: 0;
             transform: translateY(25px);
             transition: opacity 0.7s ease, transform 0.7s ease;
+            will-change: transform, opacity;
         }
         .scroll-item.active {
             opacity: 1;
@@ -196,7 +194,7 @@
 
 <section class="rule-wrap">
     <div class="container">
-        <h2 class="sec-title scroll-item">服务器诡异守则</h2>
+        <h2 class="sec-title scroll-item">服务器守则</h2>
         <div class="rule-grid">
             <div class="rule-card scroll-item">
                 <span class="rule-num">1</span>
@@ -293,6 +291,7 @@ checkServer();
 setInterval(checkServer,35000);
 
 const scrollEle = document.querySelectorAll('.scroll-item');
+// 双阈值区间，临界位置防抖，来回滑动均可触发动画且无抽搐
 const io = new IntersectionObserver((entries)=>{
     entries.forEach(en=>{
         if(en.isIntersecting){
@@ -301,7 +300,7 @@ const io = new IntersectionObserver((entries)=>{
             en.target.classList.remove('active');
         }
     });
-},{threshold:0.15});
+},{threshold:[0.1,0.4]});
 scrollEle.forEach(el=>io.observe(el));
 </script>
 </body>
