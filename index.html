@@ -32,50 +32,58 @@
         .server-title {font-size:clamp(2rem,5vw,3rem);margin-bottom:10px;color:var(--primary);animation:breath 3s ease-in-out infinite;}
         @keyframes breath {0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
         .server-subtitle {padding:12px 20px;margin:0 auto 20px;background:rgba(0,0,0,0.3);border-radius:5px;display:inline-block;}
-        
         .banner {padding:30px 0;text-align:center;}
         .server-addr {margin:20px auto;padding:10px 15px;background:rgba(0,0,0,0.3);border-radius:4px;display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;}
         .addr-text {color:var(--accent);font-size:1.1rem;font-family:monospace;}
-
-        .copy-btn,.refresh-btn {
-            background:var(--primary);
-            color:#fff;
-            border:none;
-            padding:7px 14px;
-            border-radius:4px;
-            cursor:pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size:15px;
+        /* 修改后的按钮基础样式 */
+        .copy-btn, .refresh-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 15px;
             min-width: 100px;
+            user-select: none;
+            touch-action: manipulation;
         }
-        
+
+        /* 桌面端悬停效果 */
+        @media (hover: hover) {
+            .copy-btn:hover, .refresh-btn:hover {
+                filter: brightness(1.1);
+                transform: translateY(-2px);
+            }
+        }
+
+        /* 点击按压反馈 */
+        .copy-btn:active, .refresh-btn:active {
+            transform: scale(0.92);
+            filter: brightness(0.9);
+        }
+
+        /* 成功状态样式 */
         .copy-btn.success-state {
             background: var(--success) !important;
             transform: scale(1.05);
         }
 
-        .copy-btn:active,.refresh-btn:active {
-            transform: scale(0.95);
-            opacity: 0.8;
+        /* 移动端卡片点击反馈 */
+        .feat-card:active, .rule-card:active {
+            background: rgba(255,255,255,0.1);
+            transform: scale(0.98);
         }
-
         .info-row {display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:15px 0;}
         .info-tag {background:rgba(0,0,0,0.2);color:var(--accent);padding:5px 12px;border-radius:20px;font-weight:bold;font-size:15px;}
         .online {color:#4CAF50;border:1px solid #4CAF50;}
         .offline {color:#f44336;border:1px solid #f44336;}
         .unknown {color:#ff9800;border:1px solid #ff9800;}
-        
-        .desc-box {max-width:600px;margin:25px auto;padding:18px;background:rgba(0,0,0,0.3);border-radius:4px;}
-        .desc-box h3 {color:var(--accent);margin-bottom:8px;}
-
         .scroll-item {
             opacity: 0;
             transform: translateY(20px);
-            transition: 
-                transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
-                opacity 0.6s ease-out, 
-                box-shadow 0.3s ease,
-                border-color 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.6s ease-out, box-shadow 0.3s ease,border-color 0.3s ease;
         }
         .scroll-item.animate {
             opacity: 1;
@@ -91,7 +99,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             border-color: var(--primary);
         }
-
         .card-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;margin-top:30px;}
         .feat-card {
             padding:18px;text-align:center;background:rgba(255,255,255,0.05);
@@ -104,10 +111,13 @@
         }
         .rule-num {width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;}
         footer {padding:25px 0;text-align:center;font-size:0.9rem;color:rgba(255,255,255,0.5);}
+        .feature-wrap{padding:40px 0;background:rgba(0,0,0,0.1);}
+        .rule-wrap{padding:40px 0;}
+        .rule-title{text-align:center; margin-bottom:20px; color:var(--primary)}
+        .card-title{color:var(--primary);margin:8px 0;}
     </style>
 </head>
 <body>
-
 <header>
     <div class="container">
         <h1 class="server-title">生生生生生存</h1>
@@ -119,44 +129,97 @@
     <div class="container">
         <div class="server-addr">
             <span class="addr-text" id="ipAddr">114.66.23.27:6031</span>
-            <button class="copy-btn" id="copyBtn" onclick="copyTxt(this,'114.66.23.27:6031')">复制地址</button>
-            <button class="refresh-btn" onclick="checkServer(this)">刷新状态</button>
+            <button class="copy-btn" id="copyBtn">复制地址</button>
+            <button class="refresh-btn">刷新状态</button>
+            <button class="refresh-btn" onclick="window.open('https://pcl.ruanmao.net/')">下载启动器</button>
         </div>
         <div class="info-row">
-            <div class="info-tag">版本：26.1.2</div>
+            <div class="info-tag" id="versionTxt">版本：26.1.2</div>
             <div class="info-tag" id="playerNum">在线：--</div>
             <div class="info-tag" id="serverStat">状态：获取中</div>
         </div>
     </div>
 </section>
 
-<section class="feature-wrap" style="padding:40px 0; background:rgba(0,0,0,0.1);">
+<section class="feature-wrap">
     <div class="container">
         <div class="card-grid">
-            <div class="feat-card scroll-item">🏠<h3 style="color:var(--primary)">和睦社群</h3><p>氛围融洽的MC玩家聚集地</p></div>
-            <div class="feat-card scroll-item">🛡️<h3 style="color:var(--primary)">专人管理</h3><p>管理员在线维护公平游玩</p></div>
-            <div class="feat-card scroll-item">🚀<h3 style="color:var(--primary)">稳定更新</h3><p>紧跟版本内容持续优化</p></div>
-            <div class="feat-card scroll-item">🌐<h3 style="color:var(--primary)">低延迟</h3><p>流畅游戏极少卡顿</p></div>
+            <div class="feat-card scroll-item">
+                🏠
+                <h3 class="card-title">和睦社群</h3>
+                <p>氛围融洽的MC玩家聚集地</p>
+            </div>
+            <div class="feat-card scroll-item">
+                🛡️
+                <h3 class="card-title">专人管理</h3>
+                <p>管理员在线维护公平游玩</p>
+            </div>
+            <div class="feat-card scroll-item">
+                🚀
+                <h3 class="card-title">稳定更新</h3>
+                <p>紧跟版本内容持续优化</p>
+            </div>
+            <div class="feat-card scroll-item">
+                🌐
+                <h3 class="card-title">低延迟</h3>
+                <p>流畅游戏极少卡顿</p>
+            </div>
         </div>
     </div>
 </section>
 
-<section class="rule-wrap" style="padding:40px 0;">
+<section class="rule-wrap">
     <div class="container">
-        <h2 style="text-align:center; margin-bottom:20px; color:var(--primary)" class="scroll-item">服务器守则</h2>
+        <h2 class="rule-title scroll-item">服务器守则</h2>
         <div class="rule-grid">
-            <div class="rule-card scroll-item"><span class="rule-num">1</span><div><h3>守则一</h3><p>远离无名玩家及异常区域。</p></div></div>
-            <div class="rule-card scroll-item"><span class="rule-num">2</span><div><h3>守则二</h3><p>听见脚步不见人即刻进屋。</p></div></div>
-            <div class="rule-card scroll-item"><span class="rule-num">3</span><div><h3>守则三</h3><p>天色异常漆黑时停止外出。</p></div></div>
-            <div class="rule-card scroll-item"><span class="rule-num">4</span><div><h3>守则四</h3><p>出现同名玩家即刻下线。</p></div></div>
+            <div class="rule-card scroll-item">
+                <span class="rule-num">1</span>
+                <div>
+                    <h3>守则一</h3>
+                    <p>服务器昼夜循环正常，不会静止、不会加速、不会无限黑夜。若你发现月亮高悬不落、天空持续漆黑、阳光短暂出现后瞬间消失，立刻停止一切建造与探索，等待自然天亮即可，切勿外出打怪挖矿。</p>
+                </div>
+            </div>
+            <div class="rule-card scroll-item">
+                <span class="rule-num">2</span>
+                <div>
+                    <h3>守则二</h3>
+                    <p>公共聊天区只会出现玩家正常发言。若全屏突然出现重复刷屏的同一句话、无意义重复字符，立刻关闭聊天界面，禁止阅读，等待刷屏结束再正常游戏。</p>
+                </div>
+            </div>
+            <div class="rule-card scroll-item">
+                <span class="rule-num">3</span>
+                <div>
+                    <h3>守则三</h3>
+                    <p>若你发现原本熟悉的队友，建筑风格、说话语气、游戏习惯完全大变样，不再与其交流、不再同行、不再交换物品，此时的他已经不是原本的玩家。</p>
+                </div>
+            </div>
+            <div class="rule-card scroll-item">
+                <span class="rule-num">4</span>
+                <div>
+                    <h3>守则四</h3>
+                    <p>服务器矿洞光照正常，火把统一暖黄色。若你手中或地面的火把灯光惨白、频繁闪烁、忽明忽暗，立刻熄灭火把，原路快速返回地面，当天永久禁止下矿。</p>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<footer><div class="container">© 2026 生生生生生存 保留所有权利</div></footer>
+<footer>
+    <div class="container">© 2026 生生生生生存 保留所有权利</div>
+</footer>
 
 <script>
+// 统一配置区，修改信息只改这里
+const serverConfig = {
+    ip: "114.66.23.27",
+    port: 6031,
+    version: "26.1.2",
+    copyContent: "114.66.23.27:6031"
+};
+
 let copyTimer = null;
+const copyBtn = document.getElementById('copyBtn');
+copyBtn.addEventListener('click',()=>copyTxt(copyBtn,serverConfig.copyContent));
 
 function copyTxt(btn, text) {
     if (copyTimer) clearTimeout(copyTimer);
@@ -171,7 +234,10 @@ function copyTxt(btn, text) {
         }, 2000);
     };
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(doCopy).catch(() => fallbackCopy(text, doCopy));
+        navigator.clipboard.writeText(text).then(doCopy).catch(() => {
+            fallbackCopy(text, doCopy);
+            alert("复制接口异常，已尝试手动复制");
+        });
     } else {
         fallbackCopy(text, doCopy);
     }
@@ -185,17 +251,18 @@ function fallbackCopy(text, callback) {
     try {
         document.execCommand('copy');
         callback();
-    } catch (err) {}
+    } catch (err) {
+        alert("复制失败，请手动记录地址");
+    }
     document.body.removeChild(textArea);
 }
 
-var ip = "114.66.23.27", port = 6031;
-
-function checkServer(btn){
+// 状态检测
+function checkServer(){
     const statDom = document.getElementById("serverStat");
     const playerDom = document.getElementById("playerNum");
     statDom.innerText = "刷新中...";
-    fetch(`https://api.mcstatus.io/v2/status/java/${ip}:${port}`)
+    fetch(`https://api.mcstatus.io/v2/status/java/${serverConfig.ip}:${serverConfig.port}`)
         .then(res => res.json())
         .then(d => {
             if(d.online){
@@ -209,14 +276,19 @@ function checkServer(btn){
         }).catch(() => {
             statDom.innerText = "状态：超时";
             statDom.className = "info-tag unknown";
+            alert("服务器状态查询失败，请稍后重试");
         });
 }
+
+// 绑定刷新按钮
+document.querySelectorAll('.refresh-btn')[0].addEventListener('click',checkServer);
 
 window.addEventListener('load', () => {
     setTimeout(checkServer, 500);
     setInterval(checkServer, 35000);
 });
 
+// 滚动动画
 const obs = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -225,7 +297,6 @@ const obs = new IntersectionObserver((entries) => {
         }
     });
 }, { threshold: 0.1 });
-
 document.querySelectorAll(".scroll-item").forEach(item => obs.observe(item));
 </script>
 </body>
