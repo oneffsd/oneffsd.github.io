@@ -10,9 +10,6 @@
             padding:0;
             box-sizing:border-box;
             -webkit-tap-highlight-color:transparent;
-            -webkit-appearance:none;
-            -moz-appearance:none;
-            appearance:none;
         }
         :root {
             --primary: #4c8c2b;
@@ -20,6 +17,7 @@
             --accent: #8bc34a;
             --bg: #1e1e1e;
             --text: #fff;
+            --success: #2e7d32;
         }
         body {
             background:var(--bg);
@@ -34,6 +32,7 @@
         .server-title {font-size:clamp(2rem,5vw,3rem);margin-bottom:10px;color:var(--primary);animation:breath 3s ease-in-out infinite;}
         @keyframes breath {0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
         .server-subtitle {padding:12px 20px;margin:0 auto 20px;background:rgba(0,0,0,0.3);border-radius:5px;display:inline-block;}
+        
         .banner {padding:30px 0;text-align:center;}
         .server-addr {margin:20px auto;padding:10px 15px;background:rgba(0,0,0,0.3);border-radius:4px;display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;}
         .addr-text {color:var(--accent);font-size:1.1rem;font-family:monospace;}
@@ -45,17 +44,19 @@
             padding:7px 14px;
             border-radius:4px;
             cursor:pointer;
-            transition:all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-size:15px;
-            touch-action:manipulation;
+            min-width: 100px;
         }
+        
+        .copy-btn.success-state {
+            background: var(--success) !important;
+            transform: scale(1.05);
+        }
+
         .copy-btn:active,.refresh-btn:active {
-            background:var(--secondary);
-            opacity:0.85;
-        }
-        .copy-btn:focus,.refresh-btn:focus {
-            outline:none;
-            box-shadow:none;
+            transform: scale(0.95);
+            opacity: 0.8;
         }
 
         .info-row {display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:15px 0;}
@@ -63,210 +64,169 @@
         .online {color:#4CAF50;border:1px solid #4CAF50;}
         .offline {color:#f44336;border:1px solid #f44336;}
         .unknown {color:#ff9800;border:1px solid #ff9800;}
+        
         .desc-box {max-width:600px;margin:25px auto;padding:18px;background:rgba(0,0,0,0.3);border-radius:4px;}
         .desc-box h3 {color:var(--accent);margin-bottom:8px;}
 
-        /* 淡入动画加强版 */
         .scroll-item {
-            opacity:0;
-            transform:translateY(15px); /* 更大初始位移 */
-            transition:opacity 0.6s ease-out, transform 0.6s ease-out; /* 更长、更柔和 */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 
+                transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                opacity 0.6s ease-out, 
+                box-shadow 0.3s ease,
+                border-color 0.3s ease;
         }
-        .scroll-item.active {
-            opacity:1;
-            transform:translateY(0);
+        .scroll-item.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .feat-card.scroll-item.animate:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            border-color: var(--primary);
+        }
+        .rule-card.scroll-item.animate:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-color: var(--primary);
         }
 
-        /* 卡片逐个错开 */
-        .card-grid .scroll-item:nth-child(1) { transition-delay:0ms; }
-        .card-grid .scroll-item:nth-child(2) { transition-delay:100ms; }
-        .card-grid .scroll-item:nth-child(3) { transition-delay:200ms; }
-        .card-grid .scroll-item:nth-child(4) { transition-delay:300ms; }
-
-        .feature-wrap {padding:45px 0;background:rgba(0,0,0,0.2);}
-        .sec-title {text-align:center;font-size:clamp(1.5rem,3vw,2rem);color:var(--primary);margin-bottom:25px;}
-        .tag-list {display:flex;flex-wrap:wrap;justify-content:center;gap:12px;list-style:none;}
-        .tag-item {padding:8px 18px;background:rgba(0,0,0,0.3);border:1px solid var(--primary);border-radius:30px;}
         .card-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;margin-top:30px;}
-        .feat-card {padding:18px;text-align:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;transition:transform 0.3s ease,box-shadow 0.3s ease;}
-        .feat-card:hover {transform:translateY(-6px);box-shadow:0 6px 15px rgba(0,0,0,0.35);}
-        .card-icon {font-size:1.8rem;color:var(--accent);margin-bottom:12px;}
-        .card-name {color:var(--primary);margin-bottom:8px;}
-        .rule-wrap {padding:45px 0;}
+        .feat-card {
+            padding:18px;text-align:center;background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor: pointer;
+        }
         .rule-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
-        .rule-card {display:flex;gap:12px;padding:18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;transition:transform 0.3s ease,box-shadow 0.3s ease;}
-        .rule-card:hover {transform:translateY(-4px);box-shadow:0 4px 12px rgba(0,0,0,0.25);}
+        .rule-card {
+            display:flex;gap:12px;padding:18px;background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor: pointer;
+        }
         .rule-num {width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;}
-        .rule-text h3 {color:var(--primary);margin-bottom:5px;}
         footer {padding:25px 0;text-align:center;font-size:0.9rem;color:rgba(255,255,255,0.5);}
     </style>
 </head>
 <body>
+
 <header>
     <div class="container">
         <h1 class="server-title">生生生生生存</h1>
         <p class="server-subtitle">原版生存这一块，原汁原味这一块</p>
     </div>
 </header>
+
 <section class="banner">
     <div class="container">
         <div class="server-addr">
-            <span class="addr-text">114.66.23.27:6031</span>
-            <button class="copy-btn" onclick="copyTxt(this,'114.66.23.27:6031')">复制地址</button>
-            <button class="refresh-btn" onclick="checkServer(this)">手动刷新状态</button>
+            <span class="addr-text" id="ipAddr">114.66.23.27:6031</span>
+            <button class="copy-btn" id="copyBtn" onclick="copyTxt(this,'114.66.23.27:6031')">复制地址</button>
+            <button class="refresh-btn" onclick="checkServer(this)">刷新状态</button>
         </div>
         <div class="info-row">
-            <div class="info-tag">游戏版本：26.1.2</div>
-            <div class="info-tag" id="playerNum">在线人数：--</div>
-            <div class="info-tag" id="serverStat">服务器状态：刷新中</div>
-        </div>
-        <div class="desc-box">
-            <h3>服务器简介</h3>
-            <p>超级无敌酷炫炸裂的原版生存<br>雷霆简介</p>
+            <div class="info-tag">版本：26.1.2</div>
+            <div class="info-tag" id="playerNum">在线：--</div>
+            <div class="info-tag" id="serverStat">状态：获取中</div>
         </div>
     </div>
 </section>
-<section class="feature-wrap">
+
+<section class="feature-wrap" style="padding:40px 0; background:rgba(0,0,0,0.1);">
     <div class="container">
-        <h2 class="sec-title scroll-item">服务器特色</h2>
-        <ul class="tag-list">
-            <li class="tag-item">原版生存</li>
-        </ul>
         <div class="card-grid">
-            <div class="feat-card scroll-item">
-                <div class="card-icon">🏠</div>
-                <h3 class="card-name">和睦社群</h3>
-                <p>氛围融洽的MC玩家聚集地</p>
-            </div>
-            <div class="feat-card scroll-item">
-                <div class="card-icon">🛡️</div>
-                <h3 class="card-name">专人管理</h3>
-                <p>管理员在线维护公平游玩环境</p>
-            </div>
-            <div class="feat-card scroll-item">
-                <div class="card-icon">🚀</div>
-                <h3 class="card-name">稳定更新</h3>
-                <p>紧跟版本内容，持续优化体验</p>
-            </div>
-            <div class="feat-card scroll-item">
-                <div class="card-icon">🌐</div>
-                <h3 class="card-name">低延迟运行</h3>
-                <p>流畅游戏，极少卡顿掉线</p>
-            </div>
+            <div class="feat-card scroll-item">🏠<h3 style="color:var(--primary)">和睦社群</h3><p>氛围融洽的MC玩家聚集地</p></div>
+            <div class="feat-card scroll-item">🛡️<h3 style="color:var(--primary)">专人管理</h3><p>管理员在线维护公平游玩</p></div>
+            <div class="feat-card scroll-item">🚀<h3 style="color:var(--primary)">稳定更新</h3><p>紧跟版本内容持续优化</p></div>
+            <div class="feat-card scroll-item">🌐<h3 style="color:var(--primary)">低延迟</h3><p>流畅游戏极少卡顿</p></div>
         </div>
     </div>
 </section>
-<section class="rule-wrap">
+
+<section class="rule-wrap" style="padding:40px 0;">
     <div class="container">
-        <h2 class="sec-title scroll-item">服务器守则</h2>
+        <h2 style="text-align:center; margin-bottom:20px; color:var(--primary)" class="scroll-item">服务器守则</h2>
         <div class="rule-grid">
-            <div class="rule-card scroll-item">
-                <span class="rule-num">1</span>
-                <div class="rule-text">
-                    <h3>守则一</h3>
-                    <p>服务器不存在匿名隐形玩家。若你在地图中发现方块被莫名放置、破坏、挪动，身边无任何玩家ID显示，立刻远离该区域。</p>
-                </div>
-            </div>
-            <div class="rule-card scroll-item">
-                <span class="rule-num">2</span>
-                <div class="rule-text">
-                    <h3>守则二</h3>
-                    <p>正常玩家移动挖掘都有音效，空旷处听见脚步声却不见人，立刻退回屋内紧闭出入口。</p>
-                </div>
-            </div>
-            <div class="rule-card scroll-item">
-                <span class="rule-num">3</span>
-                <div class="rule-text">
-                    <h3>守则三</h3>
-                    <p>昼夜循环异常天色漆黑时，停止探索建造，静待天亮，不要外出挖矿。</p>
-                </div>
-            </div>
-            <div class="rule-card scroll-item">
-                <span class="rule-num">4</span>
-                <div class="rule-text">
-                    <h3>守则四</h3>
-                    <p>出现与你同名陌生玩家即刻下线，当日不要再登录本服务器。</p>
-                </div>
-            </div>
+            <div class="rule-card scroll-item"><span class="rule-num">1</span><div><h3>守则一</h3><p>远离无名玩家及异常区域。</p></div></div>
+            <div class="rule-card scroll-item"><span class="rule-num">2</span><div><h3>守则二</h3><p>听见脚步不见人即刻进屋。</p></div></div>
+            <div class="rule-card scroll-item"><span class="rule-num">3</span><div><h3>守则三</h3><p>天色异常漆黑时停止外出。</p></div></div>
+            <div class="rule-card scroll-item"><span class="rule-num">4</span><div><h3>守则四</h3><p>出现同名玩家即刻下线。</p></div></div>
         </div>
     </div>
 </section>
-<footer>
-    <div class="container">© 2026 生生生生生存 保留所有权利</div>
-</footer>
+
+<footer><div class="container">© 2026 生生生生生存 保留所有权利</div></footer>
+
 <script>
-function copyTxt(btn, text){
-    navigator.clipboard.writeText(text).then(function(){
-        var old = btn.innerText;
-        btn.innerText = "复制成功";
-        setTimeout(function(){
-            btn.innerText=old;
-            btn.blur();
-        },2000);
-    }).catch(function(){
-        var tmp = document.createElement('textarea');
-        tmp.value = text;
-        document.body.appendChild(tmp);
-        tmp.select();
-        document.execCommand('copy');
-        document.body.removeChild(tmp);
-        btn.blur();
-    });
+let copyTimer = null;
+
+function copyTxt(btn, text) {
+    if (copyTimer) clearTimeout(copyTimer);
+    const originalText = "复制地址";
+    const doCopy = () => {
+        btn.innerText = "复制成功！";
+        btn.classList.add('success-state');
+        copyTimer = setTimeout(() => {
+            btn.innerText = originalText;
+            btn.classList.remove('success-state');
+            copyTimer = null;
+        }, 2000);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(doCopy).catch(() => fallbackCopy(text, doCopy));
+    } else {
+        fallbackCopy(text, doCopy);
+    }
 }
 
-var ip = "114.66.23.27";
-var port = 6031;
+function fallbackCopy(text, callback) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        callback();
+    } catch (err) {}
+    document.body.removeChild(textArea);
+}
+
+var ip = "114.66.23.27", port = 6031;
 
 function checkServer(btn){
-    var statDom = document.getElementById("serverStat");
-    var playerDom = document.getElementById("playerNum");
-    statDom.innerText = "服务器状态：刷新中";
-    statDom.className = "info-tag unknown";
-    fetch("https://api.mcstatus.io/v2/status/java/"+ip+":"+port)
-    .then(function(res){return res.json();})
-    .then(function(d){
-        if(d.online){
-            playerDom.innerText = "在线人数："+d.players.online+"/"+d.players.max;
-            statDom.innerText = "服务器状态：正常运行";
-            statDom.className = "info-tag online";
-        }else{
-            playerDom.innerText = "在线人数：暂无";
-            statDom.innerText = "服务器状态：离线";
-            statDom.className = "info-tag offline";
+    const statDom = document.getElementById("serverStat");
+    const playerDom = document.getElementById("playerNum");
+    statDom.innerText = "刷新中...";
+    fetch(`https://api.mcstatus.io/v2/status/java/${ip}:${port}`)
+        .then(res => res.json())
+        .then(d => {
+            if(d.online){
+                playerDom.innerText = `在线：${d.players.online}/${d.players.max}`;
+                statDom.innerText = "状态：正常";
+                statDom.className = "info-tag online";
+            } else {
+                statDom.innerText = "状态：离线";
+                statDom.className = "info-tag offline";
+            }
+        }).catch(() => {
+            statDom.innerText = "状态：超时";
+            statDom.className = "info-tag unknown";
+        });
+}
+
+window.addEventListener('load', () => {
+    setTimeout(checkServer, 500);
+    setInterval(checkServer, 35000);
+});
+
+const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add("animate");
+            obs.unobserve(entry.target);
         }
-    })
-    .catch(function(){
-        playerDom.innerText = "在线人数：获取失败";
-        statDom.innerText = "服务器状态：在线异常";
-        statDom.className = "info-tag unknown";
-    }).finally(function(){
-        if(btn) btn.blur();
     });
-}
+}, { threshold: 0.1 });
 
-// 页面加载完成延迟执行
-window.addEventListener('load', function() {
-    setTimeout(function() {
-        checkServer();
-        setInterval(checkServer, 35000);
-    }, 500); 
-});
-
-var items = document.getElementsByClassName("scroll-item");
-var obs = new IntersectionObserver(function(ent){
-    for(var i=0;i<ent.length;i++){
-        if(ent[i].isIntersecting){
-            ent[i].target.classList.add("active");
-            obs.unobserve(ent[i].target); // 只动一次
-        }
-    }
-},{
-    rootMargin:"0px",
-    threshold:0.1 // 10%可见就触发
-});
-for(var j=0;j<items.length;j++){
-    obs.observe(items[j]);
-}
+document.querySelectorAll(".scroll-item").forEach(item => obs.observe(item));
 </script>
 </body>
 </html>
