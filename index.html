@@ -26,6 +26,13 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .container {
@@ -55,6 +62,18 @@
             margin-bottom: 10px;
             color: var(--primary-color);
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            animation: breathe 3s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% {
+                transform: scale(1);
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 10px rgba(76, 140, 43, 0.3);
+            }
+            50% {
+                transform: scale(1.02);
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(76, 140, 43, 0.6);
+            }
         }
         
         .server-subtitle {
@@ -95,9 +114,13 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
+            transition: all 0.2s ease;
         }
         .copy-btn:hover {
             background: var(--secondary-color);
+        }
+        .copy-btn:active {
+            transform: scale(0.95);
         }
         
         .server-info-container {
@@ -118,6 +141,13 @@
         .server-status.status-online {
             color: #4CAF50;
             border: 1px solid #4CAF50;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .server-status.status-offline {
+            color: #f44336;
+            border: 1px solid #f44336;
             padding: 5px 15px;
             border-radius: 20px;
             font-weight: bold;
@@ -144,6 +174,13 @@
             text-align: center;
             color: var(--primary-color);
             margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+        .section-title.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
         .server-features {
             list-style: none;
@@ -170,10 +207,17 @@
             border-radius: 8px;
             padding: 20px;
             text-align: center;
-            transition: 0.3s;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .feature-card.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
         .feature-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
         }
         .feature-icon {
             font-size: 2rem;
@@ -200,6 +244,13 @@
             border: 1px solid rgba(255,255,255,0.1);
             padding: 20px;
             border-radius: 8px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+        .rule-item.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
         .rule-number {
             width: 40px;
@@ -253,46 +304,11 @@
                 <button class="copy-btn" onclick="复制地址('114.66.23.27:6031')">复制地址</button>
             </div>
             
-          <div class="server-info-container">
-    <div class="server-version">游戏版本：26.1.2</div>
-    <div class="player-count" id="mc-players">在线人数：--/--</div>
-    <div class="server-status status-online" id="mc-status">服务器状态：检测中...</div>
-</div>
-
-<script>
-const MC_IP = "114.66.23.27";
-const MC_PORT = 6031;
-
-async function updateMCStatus() {
-  try {
-    // 改用 mcsrvstat.us API，兼容性更好
-    const res = await fetch(`https://api.mcsrvstat.us/2/${MC_IP}:${MC_PORT}`);
-    const data = await res.json();
-
-    const onlineBool = data.online === true;
-    const online = data.players?.online ?? 0;
-    const max = data.players?.max ?? 20;
-
-    document.getElementById("mc-players").innerText = `在线人数：${online}/${max}`;
-
-    const statusEl = document.getElementById("mc-status");
-    if (onlineBool) {
-      statusEl.innerText = "服务器状态：正常运行";
-      statusEl.className = "server-status status-online";
-    } else {
-      statusEl.innerText = "服务器状态：离线";
-      statusEl.className = "server-status status-offline";
-    }
-  } catch (e) {
-    document.getElementById("mc-players").innerText = "在线人数：获取失败";
-    document.getElementById("mc-status").innerText = "服务器状态：查询错误";
-  }
-}
-
-// 立即刷新，之后每60秒更新一次
-updateMCStatus();
-setInterval(updateMCStatus, 60000);
-</script>
+            <div class="server-info-container">
+                <div class="server-version">游戏版本：26.1.2</div>
+                <div class="player-count" id="mc-players">在线人数：--/--</div>
+                <div class="server-status status-online" id="mc-status">服务器状态：检测中...</div>
+            </div>
             
             <div class="server-motd">
                 <h3>服务器简介</h3>
@@ -389,6 +405,48 @@ setInterval(updateMCStatus, 60000);
             按钮.innerText = '复制成功';
             setTimeout(()=>按钮.innerText=原有文字,2000);
         }
+
+        const MC_IP = "114.66.23.27";
+        const MC_PORT = 6031;
+
+        async function updateMCStatus() {
+          try {
+            const res = await fetch(`https://api.mcsrvstat.us/2/${MC_IP}:${MC_PORT}`);
+            const data = await res.json();
+
+            const onlineBool = data.online === true;
+            const online = data.players?.online ?? 0;
+            const max = data.players?.max ?? 20;
+
+            document.getElementById("mc-players").innerText = `在线人数：${online}/${max}`;
+
+            const statusEl = document.getElementById("mc-status");
+            if (onlineBool) {
+              statusEl.innerText = "服务器状态：正常运行";
+              statusEl.className = "server-status status-online";
+            } else {
+              statusEl.innerText = "服务器状态：离线";
+              statusEl.className = "server-status status-offline";
+            }
+          } catch (e) {
+            document.getElementById("mc-players").innerText = "在线人数：获取失败";
+            document.getElementById("mc-status").innerText = "服务器状态：查询错误";
+          }
+        }
+        updateMCStatus();
+        setInterval(updateMCStatus, 60000);
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.section-title, .feature-card, .rule-item').forEach(el => {
+            observer.observe(el);
+        });
     </script>
 </body>
 </html>
