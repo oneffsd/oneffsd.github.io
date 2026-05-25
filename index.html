@@ -74,11 +74,10 @@
         }
         .desc-box h3 {color:var(--accent);margin-bottom:8px;}
 
-        /* 关键：初始位移从25px改成8px，回弹距离大幅缩小 */
         .scroll-item {
             opacity: 0;
-            transform: translateY(8px); /* 原来25px，现在很小 */
-            transition: opacity 0.5s ease, transform 0.5s ease; /* 时间也略短一点，更利落 */
+            transform: translateY(6px);
+            transition: opacity 0.45s ease, transform 0.45s ease;
             will-change: transform, opacity;
         }
         .scroll-item.active {
@@ -299,24 +298,34 @@ checkServer();
 setInterval(checkServer,35000);
 
 const scrollEle = document.querySelectorAll('.scroll-item');
-const timerCache = new WeakMap();
+const timerMap = new WeakMap();
+const activeMap = new WeakMap();
 
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(item => {
         const el = item.target;
-        if(timerCache.has(el)) clearTimeout(timerCache.get(el));
 
+        // 1. 进入视口：立刻加 active，并锁定状态，避免滑动太快误判
         if(item.isIntersecting){
+            if(timerMap.has(el)) clearTimeout(timerMap.get(el));
             el.classList.add('active');
-        }else{
-            let t = setTimeout(() => {
-                el.classList.remove('active');
-            }, 650);
-            timerCache.set(el, t);
+            activeMap.set(el, true);
+            return;
         }
+
+        // 2. 离开视口：延迟移除，只有完全离开才重置
+        if(timerMap.has(el)) clearTimeout(timerMap.get(el));
+        const t = setTimeout(() => {
+            // 再次确认是否真的不在视口内，防止滑动太快误判
+            if(activeMap.get(el)){
+                el.classList.remove('active');
+                activeMap.set(el, false);
+            }
+        }, 400);
+        timerMap.set(el, t);
     });
 },{
-    rootMargin: "600px 0px 900px 0px", // 保持下方超大检测范围
+    rootMargin: "600px 0px 900px 0px", // 保留你要的大范围检测
     threshold: 0.05
 });
 
