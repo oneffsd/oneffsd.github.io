@@ -4,14 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="生生生生生存 - 原版生存 Minecraft 服务器">
-<meta name="theme-color" content="#080b09">
+<meta name="theme-color" content="#080b09" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f8f5" media="(prefers-color-scheme: light)">
 <meta property="og:type" content="website">
 <meta property="og:title" content="生生生生生存">
 <meta property="og:description" content="原版生存这一块，原汁原味这一块">
 <title>生生生生生存</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+
 :root{
+  color-scheme:dark;
   --bg:#080b09;--text:#e9eee8;
   --muted:rgba(233,238,232,.56);
   --faint:rgba(233,238,232,.34);
@@ -29,7 +33,9 @@ body{
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
   overflow-x:hidden;
 }
-/* ===== 背景装饰层：光晕 + 网格 + 噪点 ===== */
+.wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ===================== 背景装饰层 ===================== */
 .bg{position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:
     radial-gradient(900px 520px at 12% -12%,rgba(111,168,75,.22),transparent 62%),
@@ -44,26 +50,61 @@ body{
   -webkit-mask-image:radial-gradient(78% 46% at 50% 0%,#000,transparent 78%);
   mask-image:radial-gradient(78% 46% at 50% 0%,#000,transparent 78%)}
 .bg::after{content:"";position:absolute;inset:0;opacity:.04;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctave[...] ")}
-.wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 24px}
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-/* ===== 吸顶导航 ===== */
-.nav{position:sticky;top:0;z-index:60;border-bottom:1px solid transparent;transition:background .35s,border-color .35s,backdrop-filter .35s}
-.nav.scrolled{background:rgba(8,11,9,.72);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom-color:var(--line)}
+/* ===================== 动效层：极光 / 尘埃 / 光晕 ===================== */
+.fx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.fx-top{position:fixed;inset:0;z-index:45;pointer-events:none;overflow:hidden}
+.bw{position:absolute;will-change:transform}
+#bw1{width:58vw;height:58vw;left:-12vw;top:-16vw}
+#bw2{width:46vw;height:46vw;right:-10vw;top:-8vw}
+#bw3{width:68vw;height:68vw;left:18vw;top:30vh}
+.blob{position:absolute;inset:0;border-radius:50%}
+.b1{background:radial-gradient(circle at 50% 50%,rgba(111,168,75,.24),transparent 66%);
+  animation:drift1 26s ease-in-out infinite alternate}
+.b2{background:radial-gradient(circle at 50% 50%,rgba(56,132,116,.20),transparent 68%);
+  animation:drift2 34s ease-in-out infinite alternate}
+.b3{background:radial-gradient(circle at 50% 50%,rgba(163,224,99,.10),transparent 70%);
+  animation:drift3 42s ease-in-out infinite alternate}
+@keyframes drift1{0%{transform:translate3d(-7%,-5%,0) scale(1)}100%{transform:translate3d(9%,11%,0) scale(1.14)}}
+@keyframes drift2{0%{transform:translate3d(6%,8%,0) scale(1.08)}100%{transform:translate3d(-9%,-6%,0) scale(.94)}}
+@keyframes drift3{0%{transform:translate3d(-5%,6%,0) scale(.96)}100%{transform:translate3d(7%,-9%,0) scale(1.1)}}
+.motes{position:absolute;inset:0;display:block;width:100%;height:100%}
+.spot,.spark,.ripple{position:absolute;left:0;top:0;border-radius:50%;will-change:transform;opacity:0}
+.spot{width:680px;height:680px;margin:-340px 0 0 -340px;
+  background:radial-gradient(circle,rgba(163,224,99,.115),rgba(163,224,99,.05) 36%,transparent 68%);
+  transition:opacity 1s var(--ease)}
+.spark{width:196px;height:196px;margin:-98px 0 0 -98px;
+  background:radial-gradient(circle,rgba(214,255,175,.22),rgba(163,224,99,.06) 45%,transparent 72%);
+  transition:opacity 1s var(--ease)}
+.fx-on .spot,.fx-on .spark{opacity:1}
+.ripple{width:72px;height:72px;margin:-36px 0 0 -36px;border:1px solid rgba(163,224,99,.55);
+  box-shadow:0 0 26px rgba(163,224,99,.22) inset}
+.ripple.go{animation:ping .9s var(--ease) forwards}
+@keyframes ping{0%{opacity:.55;transform:scale(.5)}100%{opacity:0;transform:scale(2.4)}}
+
+/* ===================== 吸顶导航 ===================== */
+.nav{position:sticky;top:0;z-index:60;border-bottom:1px solid transparent;
+  transition:background .35s,border-color .35s,backdrop-filter .35s}
+.nav.scrolled{background:rgba(8,11,9,.72);backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom-color:var(--line)}
 .nav-inner{height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);font-weight:700;letter-spacing:.06em}
-.brand .mark{width:22px;height:22px;flex-shrink:0;color:var(--accent);filter:drop-shadow(0 0 8px rgba(163,224,99,.35))}
+.brand .mark{width:22px;height:22px;flex-shrink:0;color:var(--accent);
+  filter:drop-shadow(0 0 8px rgba(163,224,99,.35))}
 .brand .mark path{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linejoin:round}
 .nav-links{display:flex;align-items:center;gap:26px}
 .nav-links a{color:var(--muted);text-decoration:none;font-size:.9rem;letter-spacing:.06em;transition:color .25s}
 .nav-links a:hover{color:var(--text)}
-.nav-cta{color:var(--text)!important;padding:8px 16px;border:1px solid var(--line);border-radius:999px;transition:border-color .25s,background .25s!important}
-.nav-cta:hover{border-color:var(--line-hi)!important;background:rgba(163,224,99,.08)}
+.nav-cta{color:var(--text)!important;padding:8px 16px;border:1px solid var(--line);border-radius:999px;
+  transition:border-color .25s,background .25s}
+.nav-cta:hover{border-color:var(--line-hi);background:rgba(163,224,99,.08)}
 
-/* ===== 通用按钮 ===== */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:.92rem;font-weight:600;
-  padding:12px 20px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.05);
-  color:var(--text);cursor:pointer;text-decoration:none;letter-spacing:.02em;min-width:104px;
+/* ===================== 通用按钮 ===================== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:.92rem;
+  font-weight:600;padding:12px 20px;border-radius:11px;border:1px solid var(--line);
+  background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;text-decoration:none;
+  letter-spacing:.02em;min-width:104px;
   transition:transform .25s var(--ease),background .25s,border-color .25s,box-shadow .25s,filter .25s;
   touch-action:manipulation}
 .btn:active{transform:scale(.97)}
@@ -79,7 +120,7 @@ body{
 .btn.lg{font-size:1rem;padding:15px 32px}
 @media(hover:hover){.btn:not(:disabled):hover{transform:translateY(-2px)}}
 
-/* ===== 首屏 ===== */
+/* ===================== 首屏 ===================== */
 .hero{position:relative;padding:clamp(64px,11vw,132px) 0 clamp(48px,7vw,72px);text-align:center}
 .eyebrow{font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin-bottom:22px}
 .hero-title{font-size:clamp(2.7rem,7.4vw,4.7rem);font-weight:800;letter-spacing:.03em;line-height:1.06;
@@ -88,23 +129,22 @@ body{
   filter:drop-shadow(0 14px 34px rgba(111,168,75,.28))}
 .hero-sub{margin-top:20px;color:var(--muted);font-size:clamp(.94rem,2.2vw,1.05rem);letter-spacing:.03em}
 
-/* 地址卡片 */
-.addr-card{max-width:580px;margin:40px auto 0;padding:16px;border-radius:18px;
+.addr-card{max-width:580px;margin:40px auto 0;padding:16px;border-radius:18px;position:relative;
   background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.018));
   border:1px solid var(--line);
   box-shadow:0 30px 60px -34px rgba(0,0,0,.95),inset 0 1px 0 rgba(255,255,255,.07);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.addr-label{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);margin-bottom:11px;text-align:left;padding-left:4px}
+.addr-label{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);
+  margin-bottom:11px;text-align:left;padding-left:4px}
 .addr-row{display:flex;gap:10px;flex-wrap:wrap}
 .addr-text{flex:1 1 220px;display:flex;align-items:center;justify-content:center;min-width:0;
   font-family:var(--mono);font-size:clamp(.9rem,2.6vw,1.05rem);letter-spacing:.05em;color:var(--accent);
-  background:rgba(0,0,0,.38);border:1px solid var(--line);border-radius:11px;padding:13px 14px;user-select:all;
-  word-break:break-all}
+  background:rgba(0,0,0,.38);border:1px solid var(--line);border-radius:11px;padding:13px 14px;
+  user-select:all;word-break:break-all}
 .addr-text:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-/* 状态胶囊 */
 .stats{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-top:22px}
-.stat{display:inline-flex;align-items:center;gap:9px;padding:8px 15px;border-radius:999px;
+.stat{display:inline-flex;align-items:center;gap:9px;padding:8px 15px;border-radius:999px;position:relative;
   background:rgba(255,255,255,.028);border:1px solid var(--line);font-size:.83rem}
 .stat-key{color:var(--faint);letter-spacing:.12em;font-size:.72rem;text-transform:uppercase}
 .stat-val{font-family:var(--mono);font-weight:600;letter-spacing:.02em}
@@ -114,7 +154,7 @@ body{
 .dot.warn{background:var(--warn)}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(95,209,106,.5)}70%{box-shadow:0 0 0 9px rgba(95,209,106,0)}100%{box-shadow:0 0 0 0 rgba(95,209,106,0)}}
 
-/* ===== 图表面板 ===== */
+/* ===================== 图表面板 ===================== */
 .chart-wrap{max-width:840px;margin:48px auto 0;padding:22px 22px 16px;border-radius:18px;
   background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));
   border:1px solid var(--line);
@@ -123,33 +163,36 @@ body{
 .chart-head h2{font-size:.95rem;font-weight:600;letter-spacing:.06em;color:rgba(233,238,232,.85)}
 .chart-head span{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
 #playerChart{width:100%;height:280px;display:block}
-.chart-foot{margin-top:8px;font-size:.75rem;color:var(--faint);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.chart-foot{margin-top:8px;font-size:.75rem;color:var(--faint);display:flex;justify-content:space-between;
+  gap:10px;flex-wrap:wrap}
 
-/* ===== 区块骨架 ===== */
+/* ===================== 区块骨架 ===================== */
 .section{padding:clamp(56px,9vw,104px) 0}
 .section[id]{scroll-margin-top:80px}
 .sec-head{text-align:center;max-width:620px;margin:0 auto clamp(34px,5vw,52px)}
 .sec-head h2{font-size:clamp(1.5rem,3.6vw,2.05rem);font-weight:700;letter-spacing:.05em;margin-top:14px}
 .sec-head p{margin-top:12px;color:var(--muted);font-size:.94rem}
 
-/* ===== 特性卡 ===== */
+/* ===================== 特性卡 ===================== */
 .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:18px}
 .card{position:relative;padding:28px 24px;border-radius:16px;border:1px solid var(--line);overflow:hidden;
   background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.014));
   transition:transform .4s var(--ease),border-color .4s,box-shadow .4s,background .4s}
 .card::before{content:"";position:absolute;top:0;left:12%;right:12%;height:1px;opacity:0;
   background:linear-gradient(90deg,transparent,rgba(163,224,99,.75),transparent);transition:opacity .45s}
-.card:hover{transform:translateY(-4px);border-color:var(--line-hi);background:linear-gradient(180deg,rgba(163,224,99,.07),rgba(255,255,255,.014));
+.card:hover{transform:translateY(-4px);border-color:var(--line-hi);
+  background:linear-gradient(180deg,rgba(163,224,99,.07),rgba(255,255,255,.014));
   box-shadow:0 30px 56px -34px rgba(0,0,0,.95)}
 .card:hover::before{opacity:1}
 .icon-box{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;margin-bottom:18px;
   background:linear-gradient(180deg,rgba(163,224,99,.16),rgba(163,224,99,.04));
   border:1px solid rgba(163,224,99,.22);color:var(--accent)}
-.icon-box svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.icon-box svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round}
 .card h3{font-size:1.02rem;font-weight:650;letter-spacing:.05em;margin-bottom:8px}
 .card p{color:var(--muted);font-size:.9rem;line-height:1.75}
 
-/* ===== 守则（琥珀色调，和上面区分开） ===== */
+/* ===================== 守则 ===================== */
 .rule-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
 .rule{position:relative;overflow:hidden;padding:26px 26px 26px 24px;border-radius:16px;
   border:1px solid var(--line);border-left:2px solid rgba(217,164,65,.28);
@@ -167,37 +210,137 @@ body{
 .rule-note{max-width:760px;margin:22px auto 0;padding:12px 18px;border-radius:12px;text-align:center;
   background:rgba(255,255,255,.025);border:1px solid var(--line);font-size:.82rem;color:var(--faint)}
 
-/* ===== 结尾 CTA ===== */
+/* ===================== 结尾 CTA ===================== */
 .cta{text-align:center;padding:clamp(48px,8vw,88px) 0 clamp(56px,9vw,96px)}
 .cta-line{font-size:clamp(1.1rem,3vw,1.5rem);font-weight:700;letter-spacing:.08em;margin-bottom:26px;
   background:linear-gradient(180deg,#fff,#9fd070);-webkit-background-clip:text;background-clip:text;color:transparent}
 
-/* ===== 页脚 ===== */
+/* ===================== 页脚 ===================== */
 footer{border-top:1px solid var(--line);padding:30px 0;text-align:center;
   font-size:.82rem;color:var(--faint);letter-spacing:.05em}
 footer .mark{width:16px;height:16px;vertical-align:-3px;margin-right:8px;color:var(--accent-deep)}
 footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
 
-/* ===== 入场动画 ===== */
+/* ===================== 卡片光标高光 ===================== */
+.card::after,.rule::before,.addr-card::after,.stat::after{content:"";position:absolute;inset:0;
+  border-radius:inherit;pointer-events:none;opacity:0;
+  transition:opacity .45s var(--ease);
+  background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),rgba(163,224,99,.12),transparent 72%)}
+@media(hover:hover) and (pointer:fine){
+  .card:hover::after,.rule:hover::before,.addr-card:hover::after,.stat:hover::after{opacity:1}
+}
+
+/* ===================== 入场动画 ===================== */
 .reveal{opacity:0;transform:translateY(22px);
   transition:opacity .8s var(--ease),transform .8s var(--ease);
   transition-delay:calc(var(--d,0) * 80ms)}
 .reveal.in{opacity:1;transform:none}
 
-/* ===== 小屏 ===== */
+/* ===================== 小屏 ===================== */
+@media(max-width:700px){
+  #bw1{width:92vw;height:92vw;left:-24vw;top:-8vw}
+  #bw2{width:78vw;height:78vw;right:-22vw;top:2vw}
+  #bw3{width:104vw;height:104vw;left:6vw;top:40vh}
+}
 @media(max-width:640px){
   .nav-links a:not(.nav-cta){display:none}
   .wrap{padding:0 18px}
   #playerChart{height:200px}
-  /* 地址区改用网格：地址占满一行，两个按钮并排。
-     关键是不再让 flex-basis 落到竖直方向上去当高度用。 */
+  /* 地址区改网格：地址占满一行，两个按钮并排，同时避免 flex-basis 落到竖直方向当高度用 */
   .addr-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .addr-text{grid-column:1/-1;flex:none;height:auto;padding:12px 10px;font-size:.86rem}
   .addr-row .btn{width:100%;min-width:0;padding:12px 8px;font-size:.88rem}
-  /* 状态胶囊紧凑一点，三枚可能能挤回同一行 */
   .stat{padding:7px 12px;font-size:.78rem}
   .stat-key{font-size:.66rem}
 }
+
+/* ===================== 浅色主题 ===================== */
+@media (prefers-color-scheme: light){
+  :root{
+    color-scheme:light;
+    --bg:#f7f8f5;--text:#141a10;
+    --muted:rgba(20,28,16,.66);--faint:rgba(20,28,16,.42);
+    --line:rgba(20,30,12,.10);--line-hi:rgba(80,140,40,.38);
+    --accent:#3d7a1e;--accent-deep:#4e8a2c;--warn:#a86a12;
+  }
+  body{background:var(--bg)}
+
+  /* 背景层 */
+  .bg{background:
+    radial-gradient(900px 520px at 12% -12%,rgba(111,168,75,.20),transparent 62%),
+    radial-gradient(760px 460px at 92% -6%,rgba(56,132,116,.14),transparent 66%),
+    radial-gradient(1100px 700px at 50% 118%,rgba(111,168,75,.10),transparent 62%),
+    linear-gradient(180deg,#f8faf6 0%,#eef3ea 45%,#f8faf6 100%)}
+  .bg::before{background-image:
+    linear-gradient(rgba(20,40,10,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(20,40,10,.055) 1px,transparent 1px)}
+  .bg::after{opacity:.028}
+
+  /* 动效层：白底上"光"要变成柔和绿晕才看得见 */
+  .b1{background:radial-gradient(circle at 50% 50%,rgba(111,168,75,.17),transparent 66%)}
+  .b2{background:radial-gradient(circle at 50% 50%,rgba(56,132,116,.13),transparent 68%)}
+  .b3{background:radial-gradient(circle at 50% 50%,rgba(140,200,80,.11),transparent 70%)}
+  .spot{background:radial-gradient(circle,rgba(120,180,60,.13),rgba(120,180,60,.05) 36%,transparent 68%)}
+  .spark{background:radial-gradient(circle,rgba(150,205,90,.20),rgba(120,180,60,.06) 45%,transparent 72%)}
+  .ripple{border-color:rgba(80,140,40,.5);box-shadow:0 0 26px rgba(80,140,40,.18) inset}
+  .card::after,.rule::before,.addr-card::after,.stat::after{
+    background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),rgba(110,170,50,.16),transparent 72%)}
+
+  /* 导航与按钮 */
+  .nav.scrolled{background:rgba(250,251,248,.78)}
+  .brand .mark{filter:drop-shadow(0 1px 4px rgba(80,140,40,.28))}
+  .nav-cta:hover{background:rgba(120,180,60,.12)}
+  .btn{background:rgba(20,30,12,.04)}
+  @media(hover:hover){.btn:not(:disabled):hover{background:rgba(20,30,12,.075)}}
+  .btn.ghost{background:transparent}
+  .btn.ghost:hover{background:rgba(20,30,12,.06);border-color:rgba(20,30,12,.2)}
+  .btn.primary{box-shadow:0 10px 22px -12px rgba(70,130,30,.7),inset 0 1px 0 rgba(255,255,255,.45)}
+
+  /* 首屏 */
+  .hero-title{background:linear-gradient(180deg,#1b260f 0%,#2f5c14 55%,#4b8a1e 100%);
+    filter:drop-shadow(0 10px 26px rgba(80,140,40,.22))}
+  .addr-card{background:linear-gradient(180deg,#ffffff,#fbfdf9);
+    border-color:rgba(20,30,12,.09);
+    box-shadow:0 26px 50px -32px rgba(30,50,20,.30),inset 0 1px 0 #fff}
+  .addr-text{background:rgba(20,30,12,.045);border-color:rgba(20,30,12,.10)}
+  .stat{background:rgba(20,30,12,.035)}
+  .dot{background:rgba(20,30,12,.22)}
+  .dot.on{background:#2fae43}
+  .dot.off{background:#d63a2c}
+  .dot.warn{background:#c07f14}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,174,67,.45)}70%{box-shadow:0 0 0 9px rgba(47,174,67,0)}100%{box-shadow:0 0 0 0 rgba(47,174,67,0)}}
+
+  /* 图表面板 */
+  .chart-wrap{background:linear-gradient(180deg,#ffffff,#fbfdf9);
+    border-color:rgba(20,30,12,.09);
+    box-shadow:0 26px 50px -32px rgba(30,50,20,.30),inset 0 1px 0 #fff}
+  .chart-head h2{color:rgba(20,28,16,.88)}
+
+  /* 特性卡 */
+  .card{background:linear-gradient(180deg,#ffffff,rgba(255,255,255,.62));
+    border-color:rgba(20,30,12,.09);
+    box-shadow:0 16px 34px -28px rgba(30,50,20,.35)}
+  .card::before{background:linear-gradient(90deg,transparent,rgba(110,170,50,.8),transparent)}
+  .card:hover{background:linear-gradient(180deg,rgba(163,224,99,.14),rgba(255,255,255,.62));
+    border-color:var(--line-hi);
+    box-shadow:0 26px 50px -30px rgba(30,50,20,.40)}
+
+  /* 守则：琥珀色在白底要压深才看得清 */
+  .rule{background:linear-gradient(180deg,#ffffff,rgba(255,255,255,.62));
+    border-color:rgba(20,30,12,.09);border-left-color:rgba(190,130,20,.40)}
+  .rule::after{color:rgba(180,120,10,.13)}
+  .rule h3{color:#96650f}
+  .rule h3::after{background:linear-gradient(90deg,rgba(180,120,10,.45),transparent)}
+  .rule p{color:rgba(20,28,16,.68)}
+  .rule:hover{background:linear-gradient(180deg,rgba(217,164,65,.13),rgba(255,255,255,.62));
+    border-left-color:rgba(190,130,20,.8);border-color:var(--line-hi);
+    box-shadow:0 26px 50px -30px rgba(30,50,20,.40)}
+  .rule-note{background:rgba(20,30,12,.035)}
+
+  .cta-line{background:linear-gradient(180deg,#1b260f,#3f7a22)}
+}
+
+/* ===================== 减少动效 ===================== */
 @media(prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
   html{scroll-behavior:auto}
@@ -206,7 +349,21 @@ footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin
 </style>
 </head>
 <body>
+
 <div class="bg" aria-hidden="true"></div>
+
+<!-- 动效层 -->
+<div class="fx" id="fx" aria-hidden="true">
+<div class="aurora">
+<div class="bw" id="bw1"><span class="blob b1"></span></div>
+<div class="bw" id="bw2"><span class="blob b2"></span></div>
+<div class="bw" id="bw3"><span class="blob b3"></span></div>
+</div>
+<canvas class="motes" id="motes"></canvas>
+<div class="spot" id="spot"></div>
+<div class="spark" id="spark"></div>
+</div>
+<div class="fx-top" id="fxTop" aria-hidden="true"></div>
 
 <header class="nav" id="nav">
 <div class="wrap nav-inner">
@@ -271,7 +428,7 @@ footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin
 </div>
 <div class="card-grid">
 <div class="card reveal" style="--d:0">
-<div class="icon-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.6 19.6a5.5 5.5 0 0 1 11 0"/><path d="M16 5.6a3 3 0 0 1 0 5.6"/><path d="M17.6 19.6a5.5 5.5 0[...]"/></svg></div>
+<div class="icon-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.6 19.6a5.5 5.5 0 0 1 11 0"/><path d="M16 5.6a3 3 0 0 1 0 5.6"/><path d="M17.6 19.6a5.5 5.5 0 0 0-2.1-4.3"/></svg></div>
 <h3>和睦社群</h3><p>氛围融洽的MC玩家聚集地</p>
 </div>
 <div class="card reveal" style="--d:1">
@@ -297,10 +454,10 @@ footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin
 <h2>服务器守则</h2>
 </div>
 <div class="rule-grid">
-<div class="rule reveal" data-n="01" style="--d:0"><div><h3>守则一</h3><p>服务器昼夜循环正常，不会静止、不会加速、不会无限黑夜。若你发现月亮高悬不落、天空持[...]</p></div></div>
-<div class="rule reveal" data-n="02" style="--d:1"><div><h3>守则二</h3><p>公共聊天区只会出现玩家正常发言。若全屏突然出现重复刷屏的同一句话、无意义重复字符、[...]</p></div></div>
-<div class="rule reveal" data-n="03" style="--d:2"><div><h3>守则三</h3><p>若你发现原本熟悉的队友，建筑风格、说话语气、游戏习惯完全大变样，不再与其交流、不再[...]</p></div></div>
-<div class="rule reveal" data-n="04" style="--d:3"><div><h3>守则四</h3><p>服务器矿洞光照正常，火把统一暖黄色。若你手中或地面的火把灯光惨白、频繁闪烁、忽明忽[...]</p></div></div>
+<div class="rule reveal" data-n="01" style="--d:0"><div><h3>守则一</h3><p>服务器昼夜循环正常，不会静止、不会加速、不会无限黑夜。若你发现月亮高悬不落、天空持续漆黑、阳光短暂出现后瞬间消失，立刻停止一切建造与探索，等待自然天亮即可，切勿外出打怪挖矿。</p></div></div>
+<div class="rule reveal" data-n="02" style="--d:1"><div><h3>守则二</h3><p>公共聊天区只会出现玩家正常发言。若全屏突然出现重复刷屏的同一句话、无意义重复字符，立刻关闭聊天界面，禁止阅读，等待刷屏结束再正常游戏。</p></div></div>
+<div class="rule reveal" data-n="03" style="--d:2"><div><h3>守则三</h3><p>若你发现原本熟悉的队友，建筑风格、说话语气、游戏习惯完全大变样，不再与其交流、不再同行、不再交换物品，此时的他已经不是原本的玩家。</p></div></div>
+<div class="rule reveal" data-n="04" style="--d:3"><div><h3>守则四</h3><p>服务器矿洞光照正常，火把统一暖黄色。若你手中或地面的火把灯光惨白、频繁闪烁、忽明忽暗，立刻熄灭火把，原路快速返回地面，当天永久禁止下矿。</p></div></div>
 </div>
 <p class="rule-note reveal">以上守则均为服务器设定文案与氛围玩梗，游戏中不存在超自然现象，请安心游玩。</p>
 </div>
@@ -321,7 +478,7 @@ footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin
 </footer>
 
 <script>
-// 服务器配置区（只需修改这里）
+/* ===================== 配置区 ===================== */
 const cfg = {
   ip: "114.66.40.127",
   port: 6043,
@@ -337,7 +494,7 @@ const $ = id => document.getElementById(id);
 $("ipAddr").textContent = addr;
 $("versionTxt").textContent = cfg.version;
 
-/* ===== 复制地址 ===== */
+/* ===================== 复制地址 ===================== */
 const copyBtn = $("copyBtn");
 let copyTimer;
 function copyDone(ok) {
@@ -367,7 +524,7 @@ copyBtn.addEventListener("click", () => {
   } else fallbackCopy(addr);
 });
 
-/* ===== 在线人数数据 ===== */
+/* ===================== 在线人数数据 ===================== */
 const KEY = "playerChartData", maxAge = cfg.keepHours * 3600e3;
 let points = [];
 // 丢弃时间戳异常的数据（时钟错乱、来自"未来"的点）
@@ -392,24 +549,33 @@ function record(num) {
   prune(); normalize(); save(); drawChart();
 }
 
-/* ===== 图表 ===== */
+/* ===================== 图表 ===================== */
 const canvas = $("playerChart"), ctx = canvas.getContext("2d");
 const pad = { top: 20, right: 26, bottom: 34, left: 42 };
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-const CSS = getComputedStyle(document.documentElement);
+const rootCS = getComputedStyle(document.documentElement);
+const MONO = rootCS.getPropertyValue("--mono") || "monospace";
+const mqLight = window.matchMedia("(prefers-color-scheme: light)");
+
 function hhmm(d) {
   return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
 }
-function resizeCanvas() {
-  const r = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
-  if (!r.width || !r.height) return;
-  canvas.width = Math.round(r.width * dpr);
-  canvas.height = Math.round(r.height * dpr);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  drawChart();
+// 深色 / 浅色两套图表配色
+function palette() {
+  return mqLight.matches
+    ? { grid: "rgba(20,40,10,.10)", grid0: "rgba(20,40,10,.22)",
+        label: "rgba(20,28,16,.45)",
+        line: "#4b8a1e", glow: "rgba(75,138,30,.22)",
+        a0: "rgba(120,190,70,.30)", a1: "rgba(120,190,70,.09)", a2: "rgba(120,190,70,0)",
+        halo: "rgba(75,138,30,.14)", dot: "#2f6d16" }
+    : { grid: "rgba(255,255,255,.05)", grid0: "rgba(255,255,255,.13)",
+        label: "rgba(233,238,232,.32)",
+        line: "#a3e063", glow: "rgba(163,224,99,.45)",
+        a0: "rgba(163,224,99,.26)", a1: "rgba(163,224,99,.07)", a2: "rgba(163,224,99,0)",
+        halo: "rgba(163,224,99,.14)", dot: "#d3f79c" };
 }
 // Fritsch–Carlson 单调三次插值：曲线平滑但不过冲。
-// 人数是阶梯型数据，用普通贝塞尔/样条会在台阶处冲出负数尖角，这个算法可以避免。
+// 人数是阶梯型数据，用普通样条会在台阶处冲出负数尖角，这个算法能避免。
 function traceSmooth(p) {
   const n = p.length;
   ctx.moveTo(p[0].x, p[0].y);
@@ -428,18 +594,29 @@ function traceSmooth(p) {
   }
   for (let i = 0; i < n - 1; i++) {
     const h = dx[i] / 3;
-    ctx.bezierCurveTo(p[i].x + h, p[i].y + t[i] * h, p[i + 1].x - h, p[i + 1].y - t[i + 1] * h, p[i + 1].x, p[i + 1].y);
+    ctx.bezierCurveTo(p[i].x + h, p[i].y + t[i] * h,
+                      p[i + 1].x - h, p[i + 1].y - t[i + 1] * h,
+                      p[i + 1].x, p[i + 1].y);
   }
+}
+function resizeCanvas() {
+  const r = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  if (!r.width || !r.height) return;
+  canvas.width = Math.round(r.width * dpr);
+  canvas.height = Math.round(r.height * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  drawChart();
 }
 function drawChart() {
   const w = canvas.clientWidth, h = canvas.clientHeight;
   if (!w || !h) return;
+  const c = palette();
   const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom, now = Date.now();
   const baseY = pad.top + ch;
   const maxNum = points.reduce((mx, p) => Math.max(mx, p.num), 0);
   const maxY = Math.max(5, Math.ceil(maxNum / 5) * 5);
   ctx.clearRect(0, 0, w, h);
-  ctx.font = "11px " + (CSS.getPropertyValue("--mono") || "monospace");
+  ctx.font = "11px " + MONO;
   ctx.textBaseline = "middle";
 
   // 横向刻度（无竖网格，更干净）
@@ -447,27 +624,28 @@ function drawChart() {
   for (let i = 0; i <= 5; i++) {
     const y = Math.round(baseY - ch / 5 * i) + .5;
     ctx.beginPath();
-    ctx.strokeStyle = i === 0 ? "rgba(255,255,255,.13)" : "rgba(255,255,255,.05)";
+    ctx.strokeStyle = i === 0 ? c.grid0 : c.grid;
     ctx.lineWidth = 1;
     ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-    ctx.fillStyle = "rgba(233,238,232,.32)";
+    ctx.fillStyle = c.label;
     ctx.fillText(String(maxY / 5 * i), pad.left - 10, y);
   }
-  // 时间刻度：按可用宽度决定显示几个，窄屏自动减，避免文字叠在一起
+
+  // 时间刻度：按可用宽度决定显示几个，窄屏自动减少，避免文字叠在一起
   ctx.textBaseline = "top";
   const T = cw < 260 ? 2 : cw < 360 ? 3 : cw < 460 ? 4 : 6;
-  for (let i = 0; i <= T; i++) {
-    const x = pad.left + cw / T * i;
-    const d = new Date(now - maxAge / T * (T - i));
-    ctx.textAlign = i === 0 ? "left" : i === T ? "right" : "center";
-    ctx.fillStyle = "rgba(233,238,232,.28)";
-    ctx.fillText(hhmm(d), i === 0 ? pad.left - 2 : i === T ? w - pad.right + 2 : x, baseY + 11);
+  for (let j = 0; j <= T; j++) {
+    const x = pad.left + cw / T * j;
+    const d = new Date(now - maxAge / T * (T - j));
+    ctx.textAlign = j === 0 ? "left" : j === T ? "right" : "center";
+    ctx.fillStyle = c.label;
+    ctx.fillText(hhmm(d), j === 0 ? pad.left - 2 : j === T ? w - pad.right + 2 : x, baseY + 11);
   }
 
   if (!points.length) {
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillStyle = "rgba(233,238,232,.28)";
-    ctx.font = "12px " + (CSS.getPropertyValue("--mono") || "monospace");
+    ctx.font = "12px " + MONO;
+    ctx.fillStyle = c.label;
     ctx.fillText("暂无数据", pad.left + cw / 2, pad.top + ch / 2);
     return;
   }
@@ -482,28 +660,30 @@ function drawChart() {
   ctx.beginPath(); traceSmooth(pts);
   ctx.lineTo(pts[pts.length - 1].x, baseY); ctx.lineTo(pts[0].x, baseY); ctx.closePath();
   const g = ctx.createLinearGradient(0, pad.top, 0, baseY);
-  g.addColorStop(0, "rgba(163,224,99,.26)");
-  g.addColorStop(.55, "rgba(163,224,99,.07)");
-  g.addColorStop(1, "rgba(163,224,99,0)");
+  g.addColorStop(0, c.a0); g.addColorStop(.55, c.a1); g.addColorStop(1, c.a2);
   ctx.fillStyle = g; ctx.fill();
 
   // 曲线 + 辉光
   ctx.beginPath(); traceSmooth(pts);
   ctx.lineWidth = 2.2; ctx.lineJoin = "round"; ctx.lineCap = "round";
-  ctx.strokeStyle = "#a3e063";
-  ctx.shadowColor = "rgba(163,224,99,.45)"; ctx.shadowBlur = 14;
+  ctx.strokeStyle = c.line;
+  ctx.shadowColor = c.glow; ctx.shadowBlur = 14;
   ctx.stroke();
   ctx.shadowBlur = 0;
 
   // 末端光点
   const last = pts[pts.length - 1];
   ctx.beginPath(); ctx.arc(last.x, last.y, 8, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(163,224,99,.14)"; ctx.fill();
+  ctx.fillStyle = c.halo; ctx.fill();
   ctx.beginPath(); ctx.arc(last.x, last.y, 3.4, 0, Math.PI * 2);
-  ctx.fillStyle = "#d3f79c"; ctx.fill();
+  ctx.fillStyle = c.dot; ctx.fill();
 }
+// 系统明暗切换时立刻重画
+function onSchemeChange() { drawChart(); }
+if (mqLight.addEventListener) mqLight.addEventListener("change", onSchemeChange);
+else if (mqLight.addListener) mqLight.addListener(onSchemeChange);
 
-/* ===== 状态检测 ===== */
+/* ===================== 状态检测 ===================== */
 const statDom = $("serverStat"), playerDom = $("playerNum"), refreshBtn = $("refreshBtn"),
       lastUpd = $("lastUpd"), dot = $("dot");
 let busy = false;
@@ -555,7 +735,7 @@ async function checkServer() {
 }
 refreshBtn.addEventListener("click", checkServer);
 
-/* ===== 读取后台 data.json（由 GitHub Actions 定时写入） ===== */
+/* ===================== 读取后台 data.json（由 GitHub Actions 定时写入） ===================== */
 async function loadRemote() {
   try {
     const res = await fetch("data.json?t=" + Date.now(), { cache: "no-store" });
@@ -570,7 +750,7 @@ async function loadRemote() {
   } catch (e) { return false; }
 }
 
-/* ===== 轮询 ===== */
+/* ===================== 轮询 ===================== */
 let poll, tick = 0;
 function startPoll() {
   clearInterval(poll);
@@ -588,12 +768,12 @@ document.addEventListener("visibilitychange", () => {
 let rt;
 window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(resizeCanvas, 150); });
 
-/* ===== 吸顶导航：滚动后才浮现毛玻璃 ===== */
+/* ===================== 吸顶导航 ===================== */
 const nav = $("nav");
 function onScroll() { nav.classList.toggle("scrolled", window.scrollY > 16); }
 window.addEventListener("scroll", onScroll, { passive: true });
 
-/* ===== 入场动画 ===== */
+/* ===================== 入场动画 ===================== */
 const items = document.querySelectorAll(".reveal");
 if ("IntersectionObserver" in window) {
   const obs = new IntersectionObserver(es => es.forEach(e => {
@@ -602,7 +782,7 @@ if ("IntersectionObserver" in window) {
   items.forEach(i => obs.observe(i));
 } else items.forEach(i => i.classList.add("in"));
 
-/* ===== 启动 ===== */
+/* ===================== 启动 ===================== */
 window.addEventListener("load", async () => {
   onScroll();
   prune(); normalize();
@@ -612,79 +792,10 @@ window.addEventListener("load", async () => {
   startPoll();
 });
 </script>
-<!-- ============ 动态背景 + 鼠标互动光效：整段贴在 </body> 之前 ============ -->
-<div class="fx" id="fx" aria-hidden="true">
-<div class="aurora">
-<div class="bw" id="bw1"><span class="blob b1"></span></div>
-<div class="bw" id="bw2"><span class="blob b2"></span></div>
-<div class="bw" id="bw3"><span class="blob b3"></span></div>
-</div>
-<canvas class="motes" id="motes"></canvas>
-<div class="spot" id="spot"></div>
-<div class="spark" id="spark"></div>
-</div>
-<div class="fx-top" id="fxTop" aria-hidden="true"></div>
-
-<style>
-.fx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
-.fx-top{position:fixed;inset:0;z-index:45;pointer-events:none;overflow:hidden}
-
-/* ---- 极光层：外层吃鼠标视差，内层跑 CSS 漂移动画 ---- */
-.bw{position:absolute;will-change:transform}
-#bw1{width:58vw;height:58vw;left:-12vw;top:-16vw}
-#bw2{width:46vw;height:46vw;right:-10vw;top:-8vw}
-#bw3{width:68vw;height:68vw;left:18vw;top:30vh}
-.blob{position:absolute;inset:0;border-radius:50%}
-.b1{background:radial-gradient(circle at 50% 50%,rgba(111,168,75,.24),transparent 66%);
-  animation:drift1 26s ease-in-out infinite alternate}
-.b2{background:radial-gradient(circle at 50% 50%,rgba(56,132,116,.20),transparent 68%);
-  animation:drift2 34s ease-in-out infinite alternate}
-.b3{background:radial-gradient(circle at 50% 50%,rgba(163,224,99,.10),transparent 70%);
-  animation:drift3 42s ease-in-out infinite alternate}
-@keyframes drift1{0%{transform:translate3d(-7%,-5%,0) scale(1)}100%{transform:translate3d(9%,11%,0) scale(1.14)}}
-@keyframes drift2{0%{transform:translate3d(6%,8%,0) scale(1.08)}100%{transform:translate3d(-9%,-6%,0) scale(.94)}}
-@keyframes drift3{0%{transform:translate3d(-5%,6%,0) scale(.96)}100%{transform:translate3d(7%,-9%,0) scale(1.1)}}
-
-/* ---- 尘埃画布 ---- */
-.motes{position:absolute;inset:0;display:block;width:100%;height:100%}
-
-/* ---- 光晕 ---- */
-.spot,.spark,.ripple{position:absolute;left:0;top:0;border-radius:50%;will-change:transform;opacity:0}
-.spot{width:680px;height:680px;margin:-340px 0 0 -340px;
-  background:radial-gradient(circle,rgba(163,224,99,.115),rgba(163,224,99,.05) 36%,transparent 68%);
-  transition:opacity 1s cubic-bezier(.2,.7,.3,1)}
-.spark{width:196px;height:196px;margin:-98px 0 0 -98px;
-  background:radial-gradient(circle,rgba(214,255,175,.22),rgba(163,224,99,.06) 45%,transparent 72%);
-  transition:opacity 1s cubic-bezier(.2,.7,.3,1)}
-.fx-on .spot,.fx-on .spark{opacity:1}
-
-/* ---- 点击脉冲 ---- */
-.ripple{width:72px;height:72px;margin:-36px 0 0 -36px;border:1px solid rgba(163,224,99,.55);
-  box-shadow:0 0 26px rgba(163,224,99,.22) inset}
-.ripple.go{animation:ping .9s cubic-bezier(.2,.7,.3,1) forwards}
-@keyframes ping{0%{opacity:.55;transform:scale(.5)}100%{opacity:0;transform:scale(2.4)}}
-
-/* ---- 卡片光标高光 ---- */
-.addr-card,.stat{position:relative}
-.card::after,.rule::before,.addr-card::after,.stat::after{content:"";position:absolute;inset:0;
-  border-radius:inherit;pointer-events:none;opacity:0;
-  transition:opacity .45s cubic-bezier(.2,.7,.3,1);
-  background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),rgba(163,224,99,.12),transparent 72%)}
-@media(hover:hover) and (pointer:fine){
-  .card:hover::after,.rule:hover::before,.addr-card:hover::after,.stat:hover::after{opacity:1}
-}
-
-/* ---- 小屏：极光缩小，少占 GPU ---- */
-@media(max-width:700px){
-  #bw1{width:92vw;height:92vw;left:-24vw;top:-8vw}
-  #bw2{width:78vw;height:78vw;right:-22vw;top:2vw}
-  #bw3{width:104vw;height:104vw;left:6vw;top:40vh}
-}
-</style>
 
 <script>
+/* ===================== 动效层：极光 + 尘埃 + 弹簧光晕 ===================== */
 (function () {
-  /* ===== 可调参数 ===== */
   var cfg = {
     mainK: 120, mainC: 13,   // 主光晕：阻尼比 ≈ 0.59 → 过冲约 10% 再回正
     tailK: 42,  tailC: 7,    // 拖尾光晕：更软，摆得更久
@@ -694,20 +805,27 @@ window.addEventListener("load", async () => {
     maxMotes: 64
   };
 
+  var mq = window.matchMedia("(prefers-color-scheme: light)");
+  // 尘埃颜色跟着主题走：深色下是暖黄绿，浅色下必须换成深绿，否则白底上看不见
+  var MOTE = mq.matches ? "rgba(74,138,34," : "rgba(211,247,156,";
+  function onScheme() { MOTE = mq.matches ? "rgba(74,138,34," : "rgba(211,247,156,"; }
+  if (mq.addEventListener) mq.addEventListener("change", onScheme);
+  else if (mq.addListener) mq.addListener(onScheme);
+
   if (window.matchMedia("(prefers-reduced-motion:reduce)").matches) return;
   var fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
 
   function $(id) { return document.getElementById(id); }
   var fx = $("fx"), fxTop = $("fxTop"), spot = $("spot"), spark = $("spark"), cv = $("motes");
   var bws = [$("bw1"), $("bw2"), $("bw3")];
-  var ctx = cv.getContext("2d");
+  var c2 = cv.getContext("2d");
   var W = innerWidth, H = innerHeight;
   var tx = W / 2, ty = H * 0.34;          // 目标点
   var hasPointer = false, raf = 0, last = performance.now();
 
-  /* ===== 弹簧体：x/vx 是当前状态，k/c 决定"软硬" ===== */
-  function spring(k, c) {
-    return { x: tx, y: ty, vx: 0, vy: 0, k: k, c: c, _x: -999, _y: -999 };
+  /* ---- 弹簧体：x/vx 是当前状态，k/c 决定软硬 ---- */
+  function spring(k, damp) {
+    return { x: tx, y: ty, vx: 0, vy: 0, k: k, c: damp, _x: -999, _y: -999 };
   }
   var main = spring(cfg.mainK, cfg.mainC);
   var tail = spring(cfg.tailK, cfg.tailC);
@@ -734,7 +852,7 @@ window.addEventListener("load", async () => {
     el.style.transform = "translate3d(" + x.toFixed(1) + "px," + y.toFixed(1) + "px,0)";
   }
 
-  /* ===== 尘埃粒子 ===== */
+  /* ---- 尘埃粒子 ---- */
   var motes = [];
   function fit() {
     var w = innerWidth, h = innerHeight;
@@ -743,7 +861,7 @@ window.addEventListener("load", async () => {
     var s = Math.min(dpr, Math.sqrt(2.2e6 / (w * h)));
     cv.width = Math.round(w * s); cv.height = Math.round(h * s);
     cv.style.width = w + "px"; cv.style.height = h + "px";
-    ctx.setTransform(s, 0, 0, s, 0, 0);
+    c2.setTransform(s, 0, 0, s, 0, 0);
     W = w; H = h;
     seed();
   }
@@ -765,11 +883,11 @@ window.addEventListener("load", async () => {
   }
   function drawMotes(dt, now) {
     if (!cfg.motes || !motes.length) return;
-    ctx.clearRect(0, 0, W, H);
+    c2.clearRect(0, 0, W, H);
     var t = now / 1000, R = 210;
     for (var i = 0; i < motes.length; i++) {
       var m = motes[i];
-      /* 被光晕推开 + 被照亮 */
+      // 被光晕推开 + 被照亮
       var dx = m.x - main.x, dy = m.y - main.y, d2 = dx * dx + dy * dy, near = 0;
       if (d2 < R * R) {
         var d = Math.sqrt(d2) || 1;
@@ -786,14 +904,14 @@ window.addEventListener("load", async () => {
       var a = m.a * (0.55 + 0.45 * Math.sin(t * m.sp + m.ph));
       if (near) a *= 1 + near * 2.4;
       if (a > 1) a = 1;
-      ctx.beginPath();
-      ctx.arc(m.x, m.y, m.r * (1 + near * .5), 0, 6.2832);
-      ctx.fillStyle = "rgba(211,247,156," + a.toFixed(3) + ")";
-      ctx.fill();
+      c2.beginPath();
+      c2.arc(m.x, m.y, m.r * (1 + near * .5), 0, 6.2832);
+      c2.fillStyle = MOTE + a.toFixed(3) + ")";
+      c2.fill();
     }
   }
 
-  /* ===== 主循环 ===== */
+  /* ---- 主循环 ---- */
   function frame(now) {
     var dt = Math.min(0.05, (now - last) / 1000) || 0.016;
     last = now;
@@ -822,7 +940,7 @@ window.addEventListener("load", async () => {
     raf = requestAnimationFrame(frame);
   }
 
-  /* ===== 事件 ===== */
+  /* ---- 事件 ---- */
   window.addEventListener("pointermove", function (e) {
     tx = e.clientX; ty = e.clientY;
     hasPointer = true;
@@ -840,10 +958,10 @@ window.addEventListener("load", async () => {
     fxTop.appendChild(r);
     requestAnimationFrame(function () { r.classList.add("go"); });
     r.addEventListener("animationend", function () { r.remove(); });
-    setTimeout(function () { if (r.parentNode) r.remove(); }, 1600);
+    setTimeout(function () { if (r.parentNode) r.remove(); }, 1600);   // 保险
   }, { passive: true });
 
-  /* 卡片光标高光 */
+  // 卡片/面板的光标跟随高光
   [].forEach.call(document.querySelectorAll(".card,.rule,.addr-card,.stat"), function (el) {
     el.addEventListener("pointermove", function (e) {
       var b = el.getBoundingClientRect();
@@ -852,20 +970,19 @@ window.addEventListener("load", async () => {
     }, { passive: true });
   });
 
-  /* 窗口尺寸 */
-  var rt;
+  var rt2;
   window.addEventListener("resize", function () {
-    clearTimeout(rt);
-    rt = setTimeout(fit, 200);
+    clearTimeout(rt2);
+    rt2 = setTimeout(fit, 200);
   });
 
-  /* 切后台停帧，回前台恢复（并重置时间基准，避免一次巨大的 dt） */
+  // 切后台停帧，回前台恢复（并重置时间基准，避免一次巨大的 dt）
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) { cancelAnimationFrame(raf); raf = 0; }
     else if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); }
   });
 
-  /* ===== 启动 ===== */
+  /* ---- 启动 ---- */
   fit();
   if (!fine) fx.classList.add("fx-on");   // 触屏上直接亮起，交给自动游走
   raf = requestAnimationFrame(frame);
