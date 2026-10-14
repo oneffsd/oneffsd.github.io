@@ -606,8 +606,14 @@ window.addEventListener("load", async () => {
   startPoll();
 });
 </script>
-<!-- ============ 鼠标互动光效：整段贴在 </body> 之前 ============ -->
+<!-- ============ 动态背景 + 鼠标互动光效：整段贴在 </body> 之前 ============ -->
 <div class="fx" id="fx" aria-hidden="true">
+<div class="aurora">
+<div class="bw" id="bw1"><span class="blob b1"></span></div>
+<div class="bw" id="bw2"><span class="blob b2"></span></div>
+<div class="bw" id="bw3"><span class="blob b3"></span></div>
+</div>
+<canvas class="motes" id="motes"></canvas>
 <div class="spot" id="spot"></div>
 <div class="spark" id="spark"></div>
 </div>
@@ -616,19 +622,44 @@ window.addEventListener("load", async () => {
 <style>
 .fx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 .fx-top{position:fixed;inset:0;z-index:45;pointer-events:none;overflow:hidden}
+
+/* ---- 极光层：外层吃鼠标视差，内层跑 CSS 漂移动画 ---- */
+.bw{position:absolute;will-change:transform}
+#bw1{width:58vw;height:58vw;left:-12vw;top:-16vw}
+#bw2{width:46vw;height:46vw;right:-10vw;top:-8vw}
+#bw3{width:68vw;height:68vw;left:18vw;top:30vh}
+.blob{position:absolute;inset:0;border-radius:50%}
+.b1{background:radial-gradient(circle at 50% 50%,rgba(111,168,75,.24),transparent 66%);
+  animation:drift1 26s ease-in-out infinite alternate}
+.b2{background:radial-gradient(circle at 50% 50%,rgba(56,132,116,.20),transparent 68%);
+  animation:drift2 34s ease-in-out infinite alternate}
+.b3{background:radial-gradient(circle at 50% 50%,rgba(163,224,99,.10),transparent 70%);
+  animation:drift3 42s ease-in-out infinite alternate}
+@keyframes drift1{0%{transform:translate3d(-7%,-5%,0) scale(1)}100%{transform:translate3d(9%,11%,0) scale(1.14)}}
+@keyframes drift2{0%{transform:translate3d(6%,8%,0) scale(1.08)}100%{transform:translate3d(-9%,-6%,0) scale(.94)}}
+@keyframes drift3{0%{transform:translate3d(-5%,6%,0) scale(.96)}100%{transform:translate3d(7%,-9%,0) scale(1.1)}}
+
+/* ---- 尘埃画布 ---- */
+.motes{position:absolute;inset:0;display:block;width:100%;height:100%}
+
+/* ---- 光晕 ---- */
 .spot,.spark,.ripple{position:absolute;left:0;top:0;border-radius:50%;will-change:transform;opacity:0}
-.spot{width:660px;height:660px;margin:-330px 0 0 -330px;
+.spot{width:680px;height:680px;margin:-340px 0 0 -340px;
   background:radial-gradient(circle,rgba(163,224,99,.115),rgba(163,224,99,.05) 36%,transparent 68%);
-  transition:opacity .8s cubic-bezier(.2,.7,.3,1)}
-.spark{width:190px;height:190px;margin:-95px 0 0 -95px;
-  background:radial-gradient(circle,rgba(214,255,175,.20),rgba(163,224,99,.06) 45%,transparent 72%);
-  transition:opacity .8s cubic-bezier(.2,.7,.3,1)}
+  transition:opacity 1s cubic-bezier(.2,.7,.3,1)}
+.spark{width:196px;height:196px;margin:-98px 0 0 -98px;
+  background:radial-gradient(circle,rgba(214,255,175,.22),rgba(163,224,99,.06) 45%,transparent 72%);
+  transition:opacity 1s cubic-bezier(.2,.7,.3,1)}
 .fx-on .spot,.fx-on .spark{opacity:1}
+
+/* ---- 点击脉冲 ---- */
 .ripple{width:72px;height:72px;margin:-36px 0 0 -36px;border:1px solid rgba(163,224,99,.55);
   box-shadow:0 0 26px rgba(163,224,99,.22) inset}
 .ripple.go{animation:ping .9s cubic-bezier(.2,.7,.3,1) forwards}
 @keyframes ping{0%{opacity:.55;transform:scale(.5)}100%{opacity:0;transform:scale(2.4)}}
-/* 卡片光标跟随高光 */
+
+/* ---- 卡片光标高光 ---- */
+.addr-card,.stat{position:relative}
 .card::after,.rule::before,.addr-card::after,.stat::after{content:"";position:absolute;inset:0;
   border-radius:inherit;pointer-events:none;opacity:0;
   transition:opacity .45s cubic-bezier(.2,.7,.3,1);
@@ -636,43 +667,166 @@ window.addEventListener("load", async () => {
 @media(hover:hover) and (pointer:fine){
   .card:hover::after,.rule:hover::before,.addr-card:hover::after,.stat:hover::after{opacity:1}
 }
+
+/* ---- 小屏：极光缩小，少占 GPU ---- */
+@media(max-width:700px){
+  #bw1{width:92vw;height:92vw;left:-24vw;top:-8vw}
+  #bw2{width:78vw;height:78vw;right:-22vw;top:2vw}
+  #bw3{width:104vw;height:104vw;left:6vw;top:40vh}
+}
 </style>
 
 <script>
 (function () {
-  // 触屏 / 无精确指针 / 用户要求减少动效 → 全部不启用，省电省性能
+  /* ===== 可调参数 ===== */
+  var cfg = {
+    mainK: 120, mainC: 13,   // 主光晕：阻尼比 ≈ 0.59 → 过冲约 10% 再回正
+    tailK: 42,  tailC: 7,    // 拖尾光晕：更软，摆得更久
+    parK: 26,   parC: 9,     // 极光视差：阻尼比 ≈ 0.88，几乎不过冲
+    depth: [34, 22, 48],     // 三层极光各自的跟手幅度（px），越大越"近"
+    motes: true,
+    maxMotes: 64
+  };
+
+  if (window.matchMedia("(prefers-reduced-motion:reduce)").matches) return;
   var fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
-  var calm = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
-  if (!fine || calm) return;
 
-  var fx = document.getElementById("fx"), fxTop = document.getElementById("fxTop");
-  var spot = document.getElementById("spot"), spark = document.getElementById("spark");
+  function $(id) { return document.getElementById(id); }
+  var fx = $("fx"), fxTop = $("fxTop"), spot = $("spot"), spark = $("spark"), cv = $("motes");
+  var bws = [$("bw1"), $("bw2"), $("bw3")];
+  var ctx = cv.getContext("2d");
+  var W = innerWidth, H = innerHeight;
+  var tx = W / 2, ty = H * 0.34;          // 目标点
+  var hasPointer = false, raf = 0, last = performance.now();
 
-  /* ---- 1&2：跟随光晕（双层缓动，内层更黏） ---- */
-  var tx = innerWidth / 2, ty = innerHeight * 0.32;   // 目标位置
-  var ax = tx, ay = ty;                               // 外层当前
-  var bx = tx, by = ty;                               // 内层当前
-  var raf = 0, shown = false;
-
-  function tick() {
-    ax += (tx - ax) * 0.14; ay += (ty - ay) * 0.14;
-    bx += (ax - bx) * 0.06; by += (ay - by) * 0.06;
-    spot.style.transform  = "translate3d(" + ax.toFixed(1) + "px," + ay.toFixed(1) + "px,0)";
-    spark.style.transform = "translate3d(" + bx.toFixed(1) + "px," + by.toFixed(1) + "px,0)";
-    if (Math.abs(tx - ax) < 0.4 && Math.abs(ty - ay) < 0.4) { raf = 0; return; }  // 静止后停帧
-    raf = requestAnimationFrame(tick);
+  /* ===== 弹簧体：x/vx 是当前状态，k/c 决定"软硬" ===== */
+  function spring(k, c) {
+    return { x: tx, y: ty, vx: 0, vy: 0, k: k, c: c, _x: -999, _y: -999 };
   }
-  function wake() {
-    if (!shown) { shown = true; fx.classList.add("fx-on"); }
-    if (!raf) raf = requestAnimationFrame(tick);
+  var main = spring(cfg.mainK, cfg.mainC);
+  var tail = spring(cfg.tailK, cfg.tailC);
+  var par  = spring(cfg.parK,  cfg.parC);
+
+  // 半隐式欧拉积分：先更新速度再更新位置，dt 已钳制，不会发散
+  function integrate(s, dt) {
+    s.vx += ((tx - s.x) * s.k - s.vx * s.c) * dt;
+    s.vy += ((ty - s.y) * s.k - s.vy * s.c) * dt;
+    s.x += s.vx * dt;
+    s.y += s.vy * dt;
   }
+  // 值没变就不写 style，避免每帧无谓的样式失效
+  function place(el, s) {
+    if (Math.abs(s.x - s._x) < 0.05 && Math.abs(s.y - s._y) < 0.05) return;
+    s._x = s.x; s._y = s.y;
+    el.style.transform = "translate3d(" + s.x.toFixed(1) + "px," + s.y.toFixed(1) + "px,0)";
+  }
+  var bwCache = [{ x: -9e9, y: -9e9 }, { x: -9e9, y: -9e9 }, { x: -9e9, y: -9e9 }];
+  function placeBlob(el, i, x, y) {
+    var c = bwCache[i];
+    if (Math.abs(x - c.x) < 0.05 && Math.abs(y - c.y) < 0.05) return;
+    c.x = x; c.y = y;
+    el.style.transform = "translate3d(" + x.toFixed(1) + "px," + y.toFixed(1) + "px,0)";
+  }
+
+  /* ===== 尘埃粒子 ===== */
+  var motes = [];
+  function fit() {
+    var w = innerWidth, h = innerHeight;
+    var dpr = Math.min(devicePixelRatio || 1, 2);
+    // 限制总像素：4K 屏上别每帧合成 800 万像素
+    var s = Math.min(dpr, Math.sqrt(2.2e6 / (w * h)));
+    cv.width = Math.round(w * s); cv.height = Math.round(h * s);
+    cv.style.width = w + "px"; cv.style.height = h + "px";
+    ctx.setTransform(s, 0, 0, s, 0, 0);
+    W = w; H = h;
+    seed();
+  }
+  function seed() {
+    motes = [];
+    if (!cfg.motes) return;
+    var n = Math.round(Math.min(cfg.maxMotes, Math.max(18, W * H / 26000)));
+    for (var i = 0; i < n; i++) {
+      motes.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: 0.8 + Math.random() * 1.8,
+        vx: (Math.random() - .5) * .12,
+        vy: -(.04 + Math.random() * .15),          // 缓慢上浮
+        a: .12 + Math.random() * .3,
+        ph: Math.random() * 6.283,
+        sp: .4 + Math.random() * .8
+      });
+    }
+  }
+  function drawMotes(dt, now) {
+    if (!cfg.motes || !motes.length) return;
+    ctx.clearRect(0, 0, W, H);
+    var t = now / 1000, R = 210;
+    for (var i = 0; i < motes.length; i++) {
+      var m = motes[i];
+      /* 被光晕推开 + 被照亮 */
+      var dx = m.x - main.x, dy = m.y - main.y, d2 = dx * dx + dy * dy, near = 0;
+      if (d2 < R * R) {
+        var d = Math.sqrt(d2) || 1;
+        near = 1 - d / R;
+        var f = near * near * 34 * dt;
+        m.x += dx / d * f; m.y += dy / d * f;
+      }
+      m.x += m.vx * dt * 60;
+      m.y += m.vy * dt * 60;
+      if (m.y < -14) { m.y = H + 14; m.x = Math.random() * W; }
+      if (m.x < -14) m.x = W + 14;
+      else if (m.x > W + 14) m.x = -14;
+
+      var a = m.a * (0.55 + 0.45 * Math.sin(t * m.sp + m.ph));
+      if (near) a *= 1 + near * 2.4;
+      if (a > 1) a = 1;
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.r * (1 + near * .5), 0, 6.2832);
+      ctx.fillStyle = "rgba(211,247,156," + a.toFixed(3) + ")";
+      ctx.fill();
+    }
+  }
+
+  /* ===== 主循环 ===== */
+  function frame(now) {
+    var dt = Math.min(0.05, (now - last) / 1000) || 0.016;
+    last = now;
+
+    // 手机/平板没有鼠标：让光晕沿一条很慢的利萨如轨迹自己游走
+    if (!fine && !hasPointer) {
+      var t = now / 1000;
+      tx = W * (0.5 + 0.34 * Math.sin(t * 0.13));
+      ty = H * (0.40 + 0.24 * Math.sin(t * 0.19 + 1.1));
+    }
+
+    integrate(main, dt);
+    integrate(tail, dt);
+    integrate(par, dt);
+    place(spot, main);
+    place(spark, tail);
+
+    // 极光视差：三层各自反向偏移，幅度不同 → 纵深
+    var nx = par.x / W - 0.5, ny = par.y / H - 0.5;
+    for (var i = 0; i < bws.length; i++) {
+      var d = cfg.depth[i] || 0;
+      placeBlob(bws[i], i, -nx * d * 2, -ny * d * 1.4);
+    }
+
+    drawMotes(dt, now);
+    raf = requestAnimationFrame(frame);
+  }
+
+  /* ===== 事件 ===== */
   window.addEventListener("pointermove", function (e) {
-    tx = e.clientX; ty = e.clientY; wake();
+    tx = e.clientX; ty = e.clientY;
+    hasPointer = true;
+    if (!fx.classList.contains("fx-on")) fx.classList.add("fx-on");
   }, { passive: true });
 
-  /* ---- 4：点击光环 ---- */
   window.addEventListener("pointerdown", function (e) {
-    tx = e.clientX; ty = e.clientY; wake();
+    tx = e.clientX; ty = e.clientY;
+    hasPointer = true;
+    if (!fx.classList.contains("fx-on")) fx.classList.add("fx-on");
     var r = document.createElement("div");
     r.className = "ripple";
     r.style.left = e.clientX + "px";
@@ -680,12 +834,11 @@ window.addEventListener("load", async () => {
     fxTop.appendChild(r);
     requestAnimationFrame(function () { r.classList.add("go"); });
     r.addEventListener("animationend", function () { r.remove(); });
-    setTimeout(function () { if (r.parentNode) r.remove(); }, 1500);  // 保险
+    setTimeout(function () { if (r.parentNode) r.remove(); }, 1600);
   }, { passive: true });
 
-  /* ---- 3：卡片光标高光 ---- */
-  var targets = document.querySelectorAll(".card,.rule,.addr-card,.stat");
-  [].forEach.call(targets, function (el) {
+  /* 卡片光标高光 */
+  [].forEach.call(document.querySelectorAll(".card,.rule,.addr-card,.stat"), function (el) {
     el.addEventListener("pointermove", function (e) {
       var b = el.getBoundingClientRect();
       el.style.setProperty("--mx", (e.clientX - b.left) + "px");
@@ -693,11 +846,23 @@ window.addEventListener("load", async () => {
     }, { passive: true });
   });
 
-  /* ---- 切到后台就停帧 ---- */
+  /* 窗口尺寸 */
+  var rt;
+  window.addEventListener("resize", function () {
+    clearTimeout(rt);
+    rt = setTimeout(fit, 200);
+  });
+
+  /* 切后台停帧，回前台恢复（并重置时间基准，避免一次巨大的 dt） */
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) { cancelAnimationFrame(raf); raf = 0; }
-    else wake();
+    else if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); }
   });
+
+  /* ===== 启动 ===== */
+  fit();
+  if (!fine) fx.classList.add("fx-on");   // 触屏上直接亮起，交给自动游走
+  raf = requestAnimationFrame(frame);
 })();
 </script>
 </body>
