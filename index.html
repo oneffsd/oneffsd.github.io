@@ -606,5 +606,99 @@ window.addEventListener("load", async () => {
   startPoll();
 });
 </script>
+<!-- ============ 鼠标互动光效：整段贴在 </body> 之前 ============ -->
+<div class="fx" id="fx" aria-hidden="true">
+<div class="spot" id="spot"></div>
+<div class="spark" id="spark"></div>
+</div>
+<div class="fx-top" id="fxTop" aria-hidden="true"></div>
+
+<style>
+.fx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.fx-top{position:fixed;inset:0;z-index:45;pointer-events:none;overflow:hidden}
+.spot,.spark,.ripple{position:absolute;left:0;top:0;border-radius:50%;will-change:transform;opacity:0}
+.spot{width:660px;height:660px;margin:-330px 0 0 -330px;
+  background:radial-gradient(circle,rgba(163,224,99,.115),rgba(163,224,99,.05) 36%,transparent 68%);
+  transition:opacity .8s cubic-bezier(.2,.7,.3,1)}
+.spark{width:190px;height:190px;margin:-95px 0 0 -95px;
+  background:radial-gradient(circle,rgba(214,255,175,.20),rgba(163,224,99,.06) 45%,transparent 72%);
+  transition:opacity .8s cubic-bezier(.2,.7,.3,1)}
+.fx-on .spot,.fx-on .spark{opacity:1}
+.ripple{width:72px;height:72px;margin:-36px 0 0 -36px;border:1px solid rgba(163,224,99,.55);
+  box-shadow:0 0 26px rgba(163,224,99,.22) inset}
+.ripple.go{animation:ping .9s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes ping{0%{opacity:.55;transform:scale(.5)}100%{opacity:0;transform:scale(2.4)}}
+/* 卡片光标跟随高光 */
+.card::after,.rule::before,.addr-card::after,.stat::after{content:"";position:absolute;inset:0;
+  border-radius:inherit;pointer-events:none;opacity:0;
+  transition:opacity .45s cubic-bezier(.2,.7,.3,1);
+  background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),rgba(163,224,99,.12),transparent 72%)}
+@media(hover:hover) and (pointer:fine){
+  .card:hover::after,.rule:hover::before,.addr-card:hover::after,.stat:hover::after{opacity:1}
+}
+</style>
+
+<script>
+(function () {
+  // 触屏 / 无精确指针 / 用户要求减少动效 → 全部不启用，省电省性能
+  var fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+  var calm = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  if (!fine || calm) return;
+
+  var fx = document.getElementById("fx"), fxTop = document.getElementById("fxTop");
+  var spot = document.getElementById("spot"), spark = document.getElementById("spark");
+
+  /* ---- 1&2：跟随光晕（双层缓动，内层更黏） ---- */
+  var tx = innerWidth / 2, ty = innerHeight * 0.32;   // 目标位置
+  var ax = tx, ay = ty;                               // 外层当前
+  var bx = tx, by = ty;                               // 内层当前
+  var raf = 0, shown = false;
+
+  function tick() {
+    ax += (tx - ax) * 0.14; ay += (ty - ay) * 0.14;
+    bx += (ax - bx) * 0.06; by += (ay - by) * 0.06;
+    spot.style.transform  = "translate3d(" + ax.toFixed(1) + "px," + ay.toFixed(1) + "px,0)";
+    spark.style.transform = "translate3d(" + bx.toFixed(1) + "px," + by.toFixed(1) + "px,0)";
+    if (Math.abs(tx - ax) < 0.4 && Math.abs(ty - ay) < 0.4) { raf = 0; return; }  // 静止后停帧
+    raf = requestAnimationFrame(tick);
+  }
+  function wake() {
+    if (!shown) { shown = true; fx.classList.add("fx-on"); }
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+  window.addEventListener("pointermove", function (e) {
+    tx = e.clientX; ty = e.clientY; wake();
+  }, { passive: true });
+
+  /* ---- 4：点击光环 ---- */
+  window.addEventListener("pointerdown", function (e) {
+    tx = e.clientX; ty = e.clientY; wake();
+    var r = document.createElement("div");
+    r.className = "ripple";
+    r.style.left = e.clientX + "px";
+    r.style.top = e.clientY + "px";
+    fxTop.appendChild(r);
+    requestAnimationFrame(function () { r.classList.add("go"); });
+    r.addEventListener("animationend", function () { r.remove(); });
+    setTimeout(function () { if (r.parentNode) r.remove(); }, 1500);  // 保险
+  }, { passive: true });
+
+  /* ---- 3：卡片光标高光 ---- */
+  var targets = document.querySelectorAll(".card,.rule,.addr-card,.stat");
+  [].forEach.call(targets, function (el) {
+    el.addEventListener("pointermove", function (e) {
+      var b = el.getBoundingClientRect();
+      el.style.setProperty("--mx", (e.clientX - b.left) + "px");
+      el.style.setProperty("--my", (e.clientY - b.top) + "px");
+    }, { passive: true });
+  });
+
+  /* ---- 切到后台就停帧 ---- */
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { cancelAnimationFrame(raf); raf = 0; }
+    else wake();
+  });
+})();
+</script>
 </body>
 </html>
