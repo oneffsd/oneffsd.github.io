@@ -17,7 +17,7 @@ header{padding:20px 0;text-align:center;background:linear-gradient(rgba(34,51,24
 .banner{padding:30px 0;text-align:center}
 .server-addr{margin:20px auto;padding:10px 15px;background:rgba(0,0,0,.3);border-radius:6px;display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
 .addr-text{color:var(--accent);font-size:1.1rem;font-family:monospace;user-select:all}
-.btn{background:var(--primary);color:#fff;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;transition:transform .2s,filter .2s;font-size:15px;min-width:100px;text-decoration:none;display:inline-block;font-family:inherit;touch-action:manipulation}
+.btn{background:var(--primary);color:#fff;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;transition:transform .2s,filter .2s;font-size:15px;min-width:100px;text-decoration:none;display:inline-block;font-family:inherit;touch-action:manipulation;text-align:center;}
 .btn:focus-visible,.addr-text:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(hover:hover){.btn:hover{filter:brightness(1.1);transform:translateY(-2px)}}
 .btn:active{transform:scale(.94)}
@@ -68,6 +68,8 @@ footer{padding:25px 0;text-align:center;font-size:.9rem;color:rgba(255,255,255,.
 <button class="btn" id="copyBtn" type="button">复制地址</button>
 <button class="btn" id="refreshBtn" type="button">刷新状态</button>
 <a class="btn" href="https://pcl.ruanmao.net/" target="_blank" rel="noopener noreferrer">下载启动器</a>
+<!-- 新增的跳转下载页面按钮 -->
+<a class="btn" href="download.html" style="background:var(--accent);color:#1e1e1e;font-weight:bold;">📦 下载整合包</a>
 </div>
 <div class="info-row" aria-live="polite">
 <div class="info-tag" id="versionTxt"></div>
@@ -271,4 +273,5 @@ if ("IntersectionObserver" in window) {
 } else items.forEach(i => i.classList.add("animate"));
 </script>
 </body>
+</html>
 </html>
