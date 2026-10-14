@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="生生生生生存 - 原版生存 Minecraft 服务器">
+<meta name="theme-color" content="#4c8c2b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="生生生生生存">
+<meta property="og:description" content="原版生存这一块，原汁原味这一块">
 <title>生生生生生存</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -28,6 +32,7 @@ header{padding:20px 0;text-align:center;background:linear-gradient(rgba(34,51,24
 .info-tag.online{color:#4caf50;border-color:#4caf50}
 .info-tag.offline{color:#f44336;border-color:#f44336}
 .info-tag.unknown{color:#ff9800;border-color:#ff9800}
+.notice{max-width:640px;margin:0 auto 10px;color:rgba(255,255,255,.6);font-size:.9rem}
 .chart-wrap{padding:16px 20px;background:rgba(0,0,0,.2);border-radius:8px;margin:20px auto 0;max-width:800px}
 .chart-wrap h2{font-size:1rem;color:var(--accent);margin-bottom:8px;font-weight:600}
 .chart-wrap small{display:block;margin-top:6px;color:rgba(255,255,255,.45);font-size:.8rem}
@@ -45,6 +50,7 @@ header{padding:20px 0;text-align:center;background:linear-gradient(rgba(34,51,24
 .feat-card.animate:hover{transform:translateY(-8px);box-shadow:0 8px 20px rgba(0,0,0,.4);border-color:var(--primary)}
 .rule-card.animate:hover{transform:translateY(-5px);box-shadow:0 5px 15px rgba(0,0,0,.3);border-color:var(--primary)}}
 .rule-num{width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0}
+.rule-note{max-width:800px;margin:16px auto 0;padding:10px 14px;background:rgba(0,0,0,.2);border-radius:6px;font-size:.85rem;color:rgba(255,255,255,.5);text-align:center}
 .feature-wrap{padding:40px 0;background:rgba(0,0,0,.1)}
 .rule-wrap{padding:40px 0}
 .rule-title{text-align:center;margin-bottom:20px;color:var(--primary)}
@@ -64,11 +70,13 @@ footer{padding:25px 0;text-align:center;font-size:.9rem;color:rgba(255,255,255,.
 <section class="banner">
 <div class="container">
 <div class="server-addr">
-<span class="addr-text" id="ipAddr" tabindex="0"></span>
+<!-- 地址写死在 HTML 里，禁用 JS 或脚本加载失败时也能看到 -->
+<span class="addr-text" id="ipAddr" tabindex="0">114.66.40.127:6043</span>
 <button class="btn" id="copyBtn" type="button">复制地址</button>
 <button class="btn" id="refreshBtn" type="button">刷新状态</button>
 <a class="btn" href="download.html">下载游戏</a>
 </div>
+<noscript><p class="notice">当前浏览器未启用 JavaScript，服务器状态与在线人数无法自动获取，但上方地址可直接填进游戏客户端使用。</p></noscript>
 <div class="info-row" aria-live="polite">
 <div class="info-tag" id="versionTxt"></div>
 <div class="info-tag" id="playerNum">在线：--</div>
@@ -78,6 +86,7 @@ footer{padding:25px 0;text-align:center;font-size:.9rem;color:rgba(255,255,255,.
 <h2>近 12 小时在线人数</h2>
 <canvas id="playerChart" role="img" aria-label="近12小时在线人数折线图"></canvas>
 <small>数据由后台定时记录，约每 10 分钟更新一次</small>
+<small id="lastUpd" aria-live="polite">最近更新：--</small>
 </div>
 </div>
 </section>
@@ -102,6 +111,8 @@ footer{padding:25px 0;text-align:center;font-size:.9rem;color:rgba(255,255,255,.
 <div class="rule-card scroll-item"><span class="rule-num">3</span><div><h3>守则三</h3><p>若你发现原本熟悉的队友，建筑风格、说话语气、游戏习惯完全大变样，不再与其交流、不再同行、不再交换物品，此时的他已经不是原本的玩家。</p></div></div>
 <div class="rule-card scroll-item"><span class="rule-num">4</span><div><h3>守则四</h3><p>服务器矿洞光照正常，火把统一暖黄色。若你手中或地面的火把灯光惨白、频繁闪烁、忽明忽暗，立刻熄灭火把，原路快速返回地面，当天永久禁止下矿。</p></div></div>
 </div>
+<!-- 这行是我加的"玩梗声明"，不想要直接删掉这一个 div 即可 -->
+<p class="rule-note scroll-item">以上守则均为服务器设定文案与氛围玩梗，游戏中不存在超自然现象，请安心游玩。</p>
 </div>
 </section>
 
@@ -112,10 +123,12 @@ footer{padding:25px 0;text-align:center;font-size:.9rem;color:rgba(255,255,255,.
 const cfg = {
   ip: "114.66.40.127",
   port: 6043,
-  version: "26.1.2",
+  version: "26.1.2",   // 默认展示值，查询成功后会被接口返回的真实版本覆盖
   timeout: 8000,       // 接口超时（毫秒）
   interval: 35000,     // 自动刷新间隔（毫秒）
-  keepHours: 12        // 图表保留时长
+  keepHours: 12,       // 图表保留时长
+  sampleMs: 300000,    // 人数不变时，图表最多每隔这么久补一个点（5 分钟）
+  remoteEvery: 4       // 每刷新几次顺带同步一次 data.json
 };
 const addr = cfg.ip + ":" + cfg.port;
 const $ = id => document.getElementById(id);
@@ -149,32 +162,48 @@ copyBtn.addEventListener("click", () => {
 /* ===== 在线人数数据 ===== */
 const KEY = "playerChartData", maxAge = cfg.keepHours * 3600e3;
 let points = [];
+// 丢弃时间戳异常的数据（时钟错乱、来自"未来"的点）
+function sane(p) {
+  return !!p && isFinite(p.time) && isFinite(p.num) && p.time <= Date.now() + 60000;
+}
 try {
   const s = JSON.parse(localStorage.getItem(KEY));
-  if (Array.isArray(s)) points = s.filter(p => p && isFinite(p.time) && isFinite(p.num));
+  if (Array.isArray(s)) points = s.filter(sane);
 } catch (e) {}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(points)); } catch (e) {} }
 function prune() { const t = Date.now() - maxAge; points = points.filter(p => p.time >= t); }
-// 人数没变时只延长最后一个点，既保留时间跨度又避免数据膨胀
+// 统一排序 + 合并 1 秒内的重复点
+// 本机记录和后台 data.json 来自两个时钟源，用"排序去重"合并，谁快谁慢都不会丢数据或出现竖直折返
+function normalize() {
+  points.sort((a, b) => a.time - b.time);
+  points = points.filter((p, i, arr) => i === 0 || p.time - arr[i - 1].time > 1000);
+}
+// 记录规则：人数变化立刻记一个点；人数不变时最多每 sampleMs 补一个点。
+// 这样能保留平台期的起点（曲线不会缩成右上角一个点），数据量也不会无限膨胀。
 function record(num) {
-  const now = Date.now(), n = points.length;
-  if (n >= 2 && points[n-1].num === num && points[n-2].num === num) points[n-1].time = now;
-  else points.push({ time: now, num });
-  prune(); save(); drawChart();
+  const now = Date.now(), last = points[points.length - 1];
+  if (!last || last.num !== num || now - last.time >= cfg.sampleMs) points.push({ time: now, num });
+  prune(); normalize(); save(); drawChart();
 }
 
 /* ===== 图表 ===== */
 const canvas = $("playerChart"), ctx = canvas.getContext("2d");
+const pad = { top: 16, right: 16, bottom: 34, left: 40 };
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+function hhmm(d) {
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
 function resizeCanvas() {
   const r = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
-  canvas.width = r.width * dpr; canvas.height = r.height * dpr;
+  if (!r.width || !r.height) return;          // 未布局时直接跳过，避免把画布尺寸清零
+  canvas.width = Math.round(r.width * dpr);
+  canvas.height = Math.round(r.height * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   drawChart();
 }
-const pad = { top: 16, right: 16, bottom: 34, left: 40 };
 function drawChart() {
   const w = canvas.clientWidth, h = canvas.clientHeight;
-  if (!w) return;
+  if (!w || !h) return;
   const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom, now = Date.now();
   const maxNum = points.reduce((m, p) => Math.max(m, p.num), 0);
   const maxY = Math.max(5, Math.ceil(maxNum / 5) * 5);
@@ -191,14 +220,15 @@ function drawChart() {
   for (let i = 0; i <= 6; i++) {
     const x = pad.left + cw / 6 * i, d = new Date(now - maxAge / 6 * (6 - i));
     ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + ch); ctx.stroke();
-    ctx.fillText(String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"), x, h - pad.bottom + 18);
+    ctx.fillText(hhmm(d), x, h - pad.bottom + 18);
   }
   ctx.strokeStyle = "#4c8c2b"; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + ch); ctx.lineTo(w - pad.right, pad.top + ch); ctx.stroke();
   if (!points.length) { ctx.fillStyle = "#888"; ctx.fillText("暂无数据", pad.left + cw / 2, pad.top + ch / 2); return; }
 
-  const px = t => pad.left + (t - (now - maxAge)) / maxAge * cw;
-  const py = n => pad.top + ch - n / maxY * ch;
+  // 时间与人数都夹在绘图区内，时钟偏差的点也不会画到画布外
+  const px = t => clamp(pad.left + (t - (now - maxAge)) / maxAge * cw, pad.left, pad.left + cw);
+  const py = n => clamp(pad.top + ch - n / maxY * ch, pad.top, pad.top + ch);
   const pts = points.map(p => ({ x: px(p.time), y: py(p.num) }));
   // 延伸到当前时间，让曲线始终贴到右侧
   pts.push({ x: px(now), y: pts[pts.length - 1].y });
@@ -217,22 +247,40 @@ function drawChart() {
 }
 
 /* ===== 状态检测 ===== */
-const statDom = $("serverStat"), playerDom = $("playerNum"), refreshBtn = $("refreshBtn");
+const statDom = $("serverStat"), playerDom = $("playerNum"), refreshBtn = $("refreshBtn"), lastUpd = $("lastUpd");
 let busy = false;
 function setStat(text, cls) { statDom.textContent = text; statDom.className = "info-tag " + cls; }
+// 统一超时处理：优先用 AbortController，老浏览器退化为 Promise.race
+function fetchTimeout(url, ms) {
+  if ("AbortController" in window) {
+    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { signal: ctrl.signal }).then(
+      r => { clearTimeout(timer); return r; },
+      e => { clearTimeout(timer); throw e; }
+    );
+  }
+  return Promise.race([
+    fetch(url),
+    new Promise((_, rej) => setTimeout(() => {
+      const e = new Error("timeout"); e.name = "AbortError"; rej(e);
+    }, ms))
+  ]);
+}
 async function checkServer() {
   if (busy) return;
   busy = true; refreshBtn.disabled = true;
   statDom.textContent = "刷新中...";
-  const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), cfg.timeout);
   try {
-    const res = await fetch("https://api.mcstatus.io/v2/status/java/" + addr, { signal: ctrl.signal });
+    const res = await fetchTimeout("https://api.mcstatus.io/v2/status/java/" + addr, cfg.timeout);
     if (!res.ok) throw new Error("http " + res.status);
     const d = await res.json();
+    lastUpd.textContent = "最近更新：" + hhmm(new Date());
     if (d && d.online) {
+      if (d.version && d.version.name) $("versionTxt").textContent = "版本：" + d.version.name;
       const on = d.players && Number.isFinite(d.players.online) ? d.players.online : 0;
       const max = d.players && Number.isFinite(d.players.max) ? d.players.max : "--";
       playerDom.textContent = "在线：" + on + "/" + max;
+      canvas.setAttribute("aria-label", "近12小时在线人数折线图，当前在线 " + on + " 人");
       setStat("状态：正常", "online");
       record(on);
     } else {
@@ -242,15 +290,38 @@ async function checkServer() {
     }
   } catch (e) {
     // 请求失败时不写入图表，避免把"查询失败"误记为 0 人
-    setStat(e.name === "AbortError" ? "状态：查询超时" : "状态：查询失败", "unknown");
+    setStat(e && e.name === "AbortError" ? "状态：查询超时" : "状态：查询失败", "unknown");
   } finally {
-    clearTimeout(timer); busy = false; refreshBtn.disabled = false;
+    busy = false; refreshBtn.disabled = false;
   }
 }
 refreshBtn.addEventListener("click", checkServer);
 
-let poll;
-function startPoll() { clearInterval(poll); poll = setInterval(checkServer, cfg.interval); }
+/* ===== 读取后台 data.json（由 GitHub Actions 定时写入） ===== */
+async function loadRemote() {
+  try {
+    const res = await fetch("data.json?t=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) return false;
+    const arr = await res.json();
+    if (!Array.isArray(arr)) return false;
+    const remote = arr.filter(sane);
+    if (!remote.length) return false;
+    points = points.concat(remote);
+    prune(); normalize(); save();
+    return true;
+  } catch (e) { return false; }
+}
+
+/* ===== 轮询 ===== */
+let poll, tick = 0;
+function startPoll() {
+  clearInterval(poll);
+  poll = setInterval(async () => {
+    await checkServer();
+    // 页面长时间挂着时也要能拿到后台新写入的数据
+    if (++tick % cfg.remoteEvery === 0 && await loadRemote()) drawChart();
+  }, cfg.interval);
+}
 // 页面切到后台时暂停轮询，回到前台立即刷新
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) clearInterval(poll);
@@ -259,22 +330,13 @@ document.addEventListener("visibilitychange", () => {
 
 let rt;
 window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(resizeCanvas, 150); });
-// 读取仓库里由 GitHub Actions 定时记录的 data.json，并与本机记录合并
-async function loadRemote() {
-  try {
-    const res = await fetch("data.json?t=" + Date.now(), { cache: "no-store" });
-    if (!res.ok) return;
-    const remote = (await res.json()).filter(p => p && isFinite(p.time) && isFinite(p.num));
-    if (!remote.length) return;
-    const lastT = remote[remote.length - 1].time;
-    points = remote.concat(points.filter(p => p.time > lastT));
-    prune(); save();
-  } catch (e) {}
-}
+
 window.addEventListener("load", async () => {
-  prune(); resizeCanvas();
-  await loadRemote(); drawChart();
-  setTimeout(checkServer, 300); startPoll();
+  prune(); normalize();
+  resizeCanvas();
+  if (await loadRemote()) drawChart();   // resizeCanvas 已经画过一次，这里只在数据有更新时重绘
+  setTimeout(checkServer, 300);
+  startPoll();
 });
 
 /* ===== 滚动渐入 ===== */
