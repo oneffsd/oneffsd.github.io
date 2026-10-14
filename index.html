@@ -4,119 +4,316 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="生生生生生存 - 原版生存 Minecraft 服务器">
-<meta name="theme-color" content="#4c8c2b">
+<meta name="theme-color" content="#080b09">
 <meta property="og:type" content="website">
 <meta property="og:title" content="生生生生生存">
 <meta property="og:description" content="原版生存这一块，原汁原味这一块">
 <title>生生生生生存</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--primary:#4c8c2b;--accent:#8bc34a;--bg:#1e1e1e;--text:#fff;--success:#2e7d32}
-body{background:var(--bg);color:var(--text);font-family:"PingFang SC","Microsoft Yahei",sans-serif;line-height:1.6;font-size:16px}
-.container{max-width:1200px;margin:0 auto;padding:0 15px}
-header{padding:20px 0;text-align:center;background:linear-gradient(rgba(34,51,24,.6),rgba(0,0,0,.5))}
-.server-title{font-size:clamp(2rem,5vw,3rem);margin-bottom:10px;color:var(--primary);animation:breath 3s ease-in-out infinite}
-@keyframes breath{50%{transform:scale(1.02)}}
-.server-subtitle{padding:12px 20px;background:rgba(0,0,0,.3);border-radius:5px;display:inline-block}
-.banner{padding:30px 0;text-align:center}
-.server-addr{margin:20px auto;padding:10px 15px;background:rgba(0,0,0,.3);border-radius:6px;display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
-.addr-text{color:var(--accent);font-size:1.1rem;font-family:monospace;user-select:all}
-.btn{background:var(--primary);color:#fff;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;transition:transform .2s,filter .2s;font-size:15px;min-width:100px;text-decoration:none;display:inline-block;font-family:inherit;touch-action:manipulation}
-.btn:focus-visible,.addr-text:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media(hover:hover){.btn:hover{filter:brightness(1.1);transform:translateY(-2px)}}
-.btn:active{transform:scale(.94)}
-.btn:disabled{opacity:.6;cursor:wait}
-.btn.success-state{background:var(--success)}
-.info-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:15px 0}
-.info-tag{background:rgba(0,0,0,.2);color:var(--accent);padding:5px 12px;border-radius:20px;font-weight:bold;font-size:15px;border:1px solid transparent}
-.info-tag.online{color:#4caf50;border-color:#4caf50}
-.info-tag.offline{color:#f44336;border-color:#f44336}
-.info-tag.unknown{color:#ff9800;border-color:#ff9800}
-.notice{max-width:640px;margin:0 auto 10px;color:rgba(255,255,255,.6);font-size:.9rem}
-.chart-wrap{padding:16px 20px;background:rgba(0,0,0,.2);border-radius:8px;margin:20px auto 0;max-width:800px}
-.chart-wrap h2{font-size:1rem;color:var(--accent);margin-bottom:8px;font-weight:600}
-.chart-wrap small{display:block;margin-top:6px;color:rgba(255,255,255,.45);font-size:.8rem}
-#playerChart{width:100%;height:300px;display:block}
-@media(max-width:600px){#playerChart{height:200px}}
-.scroll-item{opacity:0;transform:translateY(20px);transition:transform .4s,opacity .6s,box-shadow .3s,border-color .3s}
-.scroll-item.animate{opacity:1;transform:none}
-.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
-.rule-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
-.feat-card,.rule-card{padding:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px}
-.feat-card{text-align:center;font-size:1.6rem}
-.feat-card p,.rule-card p{font-size:1rem}
-.rule-card{display:flex;gap:12px}
-@media(hover:hover){
-.feat-card.animate:hover{transform:translateY(-8px);box-shadow:0 8px 20px rgba(0,0,0,.4);border-color:var(--primary)}
-.rule-card.animate:hover{transform:translateY(-5px);box-shadow:0 5px 15px rgba(0,0,0,.3);border-color:var(--primary)}}
-.rule-num{width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0}
-.rule-note{max-width:800px;margin:16px auto 0;padding:10px 14px;background:rgba(0,0,0,.2);border-radius:6px;font-size:.85rem;color:rgba(255,255,255,.5);text-align:center}
-.feature-wrap{padding:40px 0;background:rgba(0,0,0,.1)}
-.rule-wrap{padding:40px 0}
-.rule-title{text-align:center;margin-bottom:20px;color:var(--primary)}
-.card-title{color:var(--primary);margin:8px 0;font-size:1.17rem}
-footer{padding:25px 0;text-align:center;font-size:.9rem;color:rgba(255,255,255,.5)}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.scroll-item{opacity:1;transform:none}}
+:root{
+  --bg:#080b09;--text:#e9eee8;
+  --muted:rgba(233,238,232,.56);
+  --faint:rgba(233,238,232,.34);
+  --line:rgba(255,255,255,.075);
+  --line-hi:rgba(163,224,99,.3);
+  --accent:#a3e063;--accent-deep:#6fa84b;
+  --warn:#d9a441;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --ease:cubic-bezier(.2,.7,.3,1);
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);line-height:1.7;font-size:16px;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+/* ===== 背景装饰层：光晕 + 网格 + 噪点 ===== */
+.bg{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 12% -12%,rgba(111,168,75,.22),transparent 62%),
+    radial-gradient(760px 460px at 92% -6%,rgba(56,132,116,.16),transparent 66%),
+    radial-gradient(1100px 700px at 50% 118%,rgba(111,168,75,.09),transparent 62%),
+    linear-gradient(180deg,#080b09 0%,#0a0f0b 45%,#080b09 100%)}
+.bg::before{content:"";position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(78% 46% at 50% 0%,#000,transparent 78%);
+  mask-image:radial-gradient(78% 46% at 50% 0%,#000,transparent 78%)}
+.bg::after{content:"";position:absolute;inset:0;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ===== 吸顶导航 ===== */
+.nav{position:sticky;top:0;z-index:60;border-bottom:1px solid transparent;transition:background .35s,border-color .35s,backdrop-filter .35s}
+.nav.scrolled{background:rgba(8,11,9,.72);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom-color:var(--line)}
+.nav-inner{height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);font-weight:700;letter-spacing:.06em}
+.brand .mark{width:22px;height:22px;flex-shrink:0;color:var(--accent);filter:drop-shadow(0 0 8px rgba(163,224,99,.35))}
+.brand .mark path{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linejoin:round}
+.nav-links{display:flex;align-items:center;gap:26px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.9rem;letter-spacing:.06em;transition:color .25s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{color:var(--text)!important;padding:8px 16px;border:1px solid var(--line);border-radius:999px;transition:border-color .25s,background .25s!important}
+.nav-cta:hover{border-color:var(--line-hi)!important;background:rgba(163,224,99,.08)}
+
+/* ===== 通用按钮 ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:.92rem;font-weight:600;
+  padding:12px 20px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.05);
+  color:var(--text);cursor:pointer;text-decoration:none;letter-spacing:.02em;min-width:104px;
+  transition:transform .25s var(--ease),background .25s,border-color .25s,box-shadow .25s,filter .25s;
+  touch-action:manipulation}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.btn.primary{color:#07130a;border-color:transparent;
+  background:linear-gradient(180deg,#a8e46a,#5f9b3e);
+  box-shadow:0 12px 26px -14px rgba(143,206,92,.9),inset 0 1px 0 rgba(255,255,255,.4)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent}
+.btn.ghost:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18)}
+.btn.success-state{color:#07130a;border-color:transparent;background:linear-gradient(180deg,#9fe267,#57933a)}
+.btn.lg{font-size:1rem;padding:15px 32px}
+@media(hover:hover){.btn:not(:disabled):hover{transform:translateY(-2px)}}
+
+/* ===== 首屏 ===== */
+.hero{position:relative;padding:clamp(64px,11vw,132px) 0 clamp(48px,7vw,72px);text-align:center}
+.eyebrow{font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin-bottom:22px}
+.hero-title{font-size:clamp(2.7rem,7.4vw,4.7rem);font-weight:800;letter-spacing:.03em;line-height:1.06;
+  background:linear-gradient(180deg,#ffffff 4%,#d5ecbd 52%,#8fca63 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 14px 34px rgba(111,168,75,.28))}
+.hero-sub{margin-top:20px;color:var(--muted);font-size:clamp(.94rem,2.2vw,1.05rem);letter-spacing:.03em}
+
+/* 地址卡片 */
+.addr-card{max-width:580px;margin:40px auto 0;padding:16px;border-radius:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.018));
+  border:1px solid var(--line);
+  box-shadow:0 30px 60px -34px rgba(0,0,0,.95),inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.addr-label{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);margin-bottom:11px;text-align:left;padding-left:4px}
+.addr-row{display:flex;gap:10px;flex-wrap:wrap}
+.addr-text{flex:1 1 220px;display:flex;align-items:center;justify-content:center;min-width:0;
+  font-family:var(--mono);font-size:clamp(.9rem,2.6vw,1.05rem);letter-spacing:.05em;color:var(--accent);
+  background:rgba(0,0,0,.38);border:1px solid var(--line);border-radius:11px;padding:13px 14px;user-select:all;
+  word-break:break-all}
+.addr-text:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* 状态胶囊 */
+.stats{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-top:22px}
+.stat{display:inline-flex;align-items:center;gap:9px;padding:8px 15px;border-radius:999px;
+  background:rgba(255,255,255,.028);border:1px solid var(--line);font-size:.83rem}
+.stat-key{color:var(--faint);letter-spacing:.12em;font-size:.72rem;text-transform:uppercase}
+.stat-val{font-family:var(--mono);font-weight:600;letter-spacing:.02em}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);flex-shrink:0;transition:background .3s}
+.dot.on{background:#5fd16a;animation:pulse 2.6s var(--ease) infinite}
+.dot.off{background:#e8564a}
+.dot.warn{background:var(--warn)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(95,209,106,.5)}70%{box-shadow:0 0 0 9px rgba(95,209,106,0)}100%{box-shadow:0 0 0 0 rgba(95,209,106,0)}}
+
+/* ===== 图表面板 ===== */
+.chart-wrap{max-width:840px;margin:48px auto 0;padding:22px 22px 16px;border-radius:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));
+  border:1px solid var(--line);
+  box-shadow:0 30px 60px -38px rgba(0,0,0,.95),inset 0 1px 0 rgba(255,255,255,.05)}
+.chart-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.chart-head h2{font-size:.95rem;font-weight:600;letter-spacing:.06em;color:rgba(233,238,232,.85)}
+.chart-head span{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+#playerChart{width:100%;height:280px;display:block}
+.chart-foot{margin-top:8px;font-size:.75rem;color:var(--faint);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+/* ===== 区块骨架 ===== */
+.section{padding:clamp(56px,9vw,104px) 0}
+.section[id]{scroll-margin-top:80px}
+.sec-head{text-align:center;max-width:620px;margin:0 auto clamp(34px,5vw,52px)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.05rem);font-weight:700;letter-spacing:.05em;margin-top:14px}
+.sec-head p{margin-top:12px;color:var(--muted);font-size:.94rem}
+
+/* ===== 特性卡 ===== */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:18px}
+.card{position:relative;padding:28px 24px;border-radius:16px;border:1px solid var(--line);overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.014));
+  transition:transform .4s var(--ease),border-color .4s,box-shadow .4s,background .4s}
+.card::before{content:"";position:absolute;top:0;left:12%;right:12%;height:1px;opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(163,224,99,.75),transparent);transition:opacity .45s}
+.card:hover{transform:translateY(-4px);border-color:var(--line-hi);background:linear-gradient(180deg,rgba(163,224,99,.07),rgba(255,255,255,.014));
+  box-shadow:0 30px 56px -34px rgba(0,0,0,.95)}
+.card:hover::before{opacity:1}
+.icon-box{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;margin-bottom:18px;
+  background:linear-gradient(180deg,rgba(163,224,99,.16),rgba(163,224,99,.04));
+  border:1px solid rgba(163,224,99,.22);color:var(--accent)}
+.icon-box svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-size:1.02rem;font-weight:650;letter-spacing:.05em;margin-bottom:8px}
+.card p{color:var(--muted);font-size:.9rem;line-height:1.75}
+
+/* ===== 守则（琥珀色调，和上面区分开） ===== */
+.rule-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.rule{position:relative;overflow:hidden;padding:26px 26px 26px 24px;border-radius:16px;
+  border:1px solid var(--line);border-left:2px solid rgba(217,164,65,.28);
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01));
+  transition:transform .4s var(--ease),border-color .4s,background .4s,box-shadow .4s}
+.rule::after{content:attr(data-n);position:absolute;right:8px;bottom:-30px;font-family:var(--mono);
+  font-size:6.4rem;font-weight:800;line-height:1;color:rgba(217,164,65,.055);pointer-events:none;user-select:none}
+.rule:hover{transform:translateY(-4px);border-left-color:rgba(217,164,65,.65);border-color:var(--line-hi);
+  background:linear-gradient(180deg,rgba(217,164,65,.055),rgba(255,255,255,.01));
+  box-shadow:0 30px 56px -34px rgba(0,0,0,.95)}
+.rule h3{position:relative;font-size:.95rem;font-weight:650;letter-spacing:.1em;color:rgba(217,164,65,.9);
+  display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.rule h3::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(217,164,65,.3),transparent)}
+.rule p{position:relative;color:rgba(233,238,232,.62);font-size:.92rem;line-height:1.9}
+.rule-note{max-width:760px;margin:22px auto 0;padding:12px 18px;border-radius:12px;text-align:center;
+  background:rgba(255,255,255,.025);border:1px solid var(--line);font-size:.82rem;color:var(--faint)}
+
+/* ===== 结尾 CTA ===== */
+.cta{text-align:center;padding:clamp(48px,8vw,88px) 0 clamp(56px,9vw,96px)}
+.cta-line{font-size:clamp(1.1rem,3vw,1.5rem);font-weight:700;letter-spacing:.08em;margin-bottom:26px;
+  background:linear-gradient(180deg,#fff,#9fd070);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ===== 页脚 ===== */
+footer{border-top:1px solid var(--line);padding:30px 0;text-align:center;
+  font-size:.82rem;color:var(--faint);letter-spacing:.05em}
+footer .mark{width:16px;height:16px;vertical-align:-3px;margin-right:8px;color:var(--accent-deep)}
+footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
+
+/* ===== 入场动画 ===== */
+.reveal{opacity:0;transform:translateY(22px);
+  transition:opacity .8s var(--ease),transform .8s var(--ease);
+  transition-delay:calc(var(--d,0) * 80ms)}
+.reveal.in{opacity:1;transform:none}
+
+/* ===== 小屏 ===== */
+@media(max-width:640px){
+  .nav-links a:not(.nav-cta){display:none}
+  .wrap{padding:0 18px}
+  #playerChart{height:200px}
+  .addr-row{flex-direction:column}
+  .addr-text{width:100%}
+  .addr-row .btn{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+}
 </style>
 </head>
 <body>
-<header>
-<div class="container">
-<h1 class="server-title">生生生生生存</h1>
-<p class="server-subtitle">原版生存这一块，原汁原味这一块</p>
+<div class="bg" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+<div class="wrap nav-inner">
+<a class="brand" href="./">
+<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.9 21 7.6v8.8L12 21.1 3 16.4V7.6z"/><path d="M3 7.6l9 4.7 9-4.7M12 12.3v8.8"/></svg>
+<span>生生生生生存</span>
+</a>
+<nav class="nav-links">
+<a href="#features">特性</a>
+<a href="#rules">守则</a>
+<a class="nav-cta" href="download.html">下载游戏</a>
+</nav>
 </div>
 </header>
 
-<section class="banner">
-<div class="container">
-<div class="server-addr">
-<!-- 地址写死在 HTML 里，禁用 JS 或脚本加载失败时也能看到 -->
-<span class="addr-text" id="ipAddr" tabindex="0">114.66.40.127:6043</span>
-<button class="btn" id="copyBtn" type="button">复制地址</button>
-<button class="btn" id="refreshBtn" type="button">刷新状态</button>
-<a class="btn" href="download.html">下载游戏</a>
+<main>
+<section class="hero">
+<div class="wrap">
+<p class="eyebrow reveal">Java Edition · 原版生存</p>
+<h1 class="hero-title reveal" style="--d:1">生生生生生存</h1>
+<p class="hero-sub reveal" style="--d:2">原版生存这一块，原汁原味这一块</p>
+
+<div class="addr-card reveal" style="--d:3">
+<div class="addr-label">服务器地址</div>
+<div class="addr-row">
+<code class="addr-text" id="ipAddr" tabindex="0">114.66.40.127:6043</code>
+<button class="btn primary" id="copyBtn" type="button">复制地址</button>
+<button class="btn ghost" id="refreshBtn" type="button">刷新</button>
 </div>
-<noscript><p class="notice">当前浏览器未启用 JavaScript，服务器状态与在线人数无法自动获取，但上方地址可直接填进游戏客户端使用。</p></noscript>
-<div class="info-row" aria-live="polite">
-<div class="info-tag" id="versionTxt"></div>
-<div class="info-tag" id="playerNum">在线：--</div>
-<div class="info-tag" id="serverStat">状态：获取中</div>
 </div>
-<div class="chart-wrap">
+
+<div class="stats reveal" style="--d:4" aria-live="polite">
+<div class="stat"><span class="stat-key">版本</span><span class="stat-val" id="versionTxt">--</span></div>
+<div class="stat"><span class="stat-key">在线</span><span class="stat-val" id="playerNum">--</span></div>
+<div class="stat"><i class="dot" id="dot"></i><span class="stat-val" id="serverStat">获取中</span></div>
+</div>
+<noscript><p class="rule-note" style="margin-top:20px">当前浏览器未启用 JavaScript，服务器状态无法自动获取，但上方地址可直接填进游戏客户端使用。</p></noscript>
+</div>
+</section>
+
+<section class="section" style="padding-top:0">
+<div class="wrap">
+<div class="chart-wrap reveal">
+<div class="chart-head">
 <h2>近 12 小时在线人数</h2>
+<span>Live</span>
+</div>
 <canvas id="playerChart" role="img" aria-label="近12小时在线人数折线图"></canvas>
-<small>数据由后台定时记录，约每 10 分钟更新一次</small>
-<small id="lastUpd" aria-live="polite">最近更新：--</small>
+<div class="chart-foot">
+<span>数据由后台定时记录，约每 10 分钟更新一次</span>
+<span id="lastUpd" aria-live="polite">最近更新：--</span>
+</div>
 </div>
 </div>
 </section>
 
-<section class="feature-wrap">
-<div class="container">
+<section class="section" id="features">
+<div class="wrap">
+<div class="sec-head reveal">
+<p class="eyebrow">Features</p>
+<h2>服务器特性</h2>
+</div>
 <div class="card-grid">
-<div class="feat-card scroll-item">🏠<h3 class="card-title">和睦社群</h3><p>氛围融洽的MC玩家聚集地</p></div>
-<div class="feat-card scroll-item">🛡️<h3 class="card-title">专人管理</h3><p>管理员在线维护公平游玩</p></div>
-<div class="feat-card scroll-item">🚀<h3 class="card-title">稳定更新</h3><p>紧跟版本内容持续优化</p></div>
-<div class="feat-card scroll-item">🌐<h3 class="card-title">低延迟</h3><p>流畅游戏极少卡顿</p></div>
+<div class="card reveal" style="--d:0">
+<div class="icon-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.6 19.6a5.5 5.5 0 0 1 11 0"/><path d="M16 5.6a3 3 0 0 1 0 5.6"/><path d="M17.6 19.6a5.5 5.5 0 0 0-2.1-4.3"/></svg></div>
+<h3>和睦社群</h3><p>氛围融洽的MC玩家聚集地</p>
+</div>
+<div class="card reveal" style="--d:1">
+<div class="icon-box"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4 19 6v5.6c0 4.3-2.9 7.4-7 9-4.1-1.6-7-4.7-7-9V6z"/><path d="M9.3 12.1l2 2 3.4-3.6"/></svg></div>
+<h3>专人管理</h3><p>管理员在线维护公平游玩</p>
+</div>
+<div class="card reveal" style="--d:2">
+<div class="icon-box"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.8 16.4l5-5 3 3 7.2-7.2"/><path d="M14.6 7.2h4.4v4.4"/></svg></div>
+<h3>稳定更新</h3><p>紧跟版本内容持续优化</p>
+</div>
+<div class="card reveal" style="--d:3">
+<div class="icon-box"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.6h.01"/><path d="M8.4 14.2a5.1 5.1 0 0 1 7.2 0"/><path d="M5.4 11a9.4 9.4 0 0 1 13.2 0"/></svg></div>
+<h3>低延迟</h3><p>流畅游戏极少卡顿</p>
+</div>
 </div>
 </div>
 </section>
 
-<section class="rule-wrap">
-<div class="container">
-<h2 class="rule-title scroll-item">服务器守则</h2>
+<section class="section" id="rules">
+<div class="wrap">
+<div class="sec-head reveal">
+<p class="eyebrow">Rules</p>
+<h2>服务器守则</h2>
+</div>
 <div class="rule-grid">
-<div class="rule-card scroll-item"><span class="rule-num">1</span><div><h3>守则一</h3><p>服务器昼夜循环正常，不会静止、不会加速、不会无限黑夜。若你发现月亮高悬不落、天空持续漆黑、阳光短暂出现后瞬间消失，立刻停止一切建造与探索，等待自然天亮即可，切勿外出打怪挖矿。</p></div></div>
-<div class="rule-card scroll-item"><span class="rule-num">2</span><div><h3>守则二</h3><p>公共聊天区只会出现玩家正常发言。若全屏突然出现重复刷屏的同一句话、无意义重复字符，立刻关闭聊天界面，禁止阅读，等待刷屏结束再正常游戏。</p></div></div>
-<div class="rule-card scroll-item"><span class="rule-num">3</span><div><h3>守则三</h3><p>若你发现原本熟悉的队友，建筑风格、说话语气、游戏习惯完全大变样，不再与其交流、不再同行、不再交换物品，此时的他已经不是原本的玩家。</p></div></div>
-<div class="rule-card scroll-item"><span class="rule-num">4</span><div><h3>守则四</h3><p>服务器矿洞光照正常，火把统一暖黄色。若你手中或地面的火把灯光惨白、频繁闪烁、忽明忽暗，立刻熄灭火把，原路快速返回地面，当天永久禁止下矿。</p></div></div>
+<div class="rule reveal" data-n="01" style="--d:0"><div><h3>守则一</h3><p>服务器昼夜循环正常，不会静止、不会加速、不会无限黑夜。若你发现月亮高悬不落、天空持续漆黑、阳光短暂出现后瞬间消失，立刻停止一切建造与探索，等待自然天亮即可，切勿外出打怪挖矿。</p></div></div>
+<div class="rule reveal" data-n="02" style="--d:1"><div><h3>守则二</h3><p>公共聊天区只会出现玩家正常发言。若全屏突然出现重复刷屏的同一句话、无意义重复字符，立刻关闭聊天界面，禁止阅读，等待刷屏结束再正常游戏。</p></div></div>
+<div class="rule reveal" data-n="03" style="--d:2"><div><h3>守则三</h3><p>若你发现原本熟悉的队友，建筑风格、说话语气、游戏习惯完全大变样，不再与其交流、不再同行、不再交换物品，此时的他已经不是原本的玩家。</p></div></div>
+<div class="rule reveal" data-n="04" style="--d:3"><div><h3>守则四</h3><p>服务器矿洞光照正常，火把统一暖黄色。若你手中或地面的火把灯光惨白、频繁闪烁、忽明忽暗，立刻熄灭火把，原路快速返回地面，当天永久禁止下矿。</p></div></div>
 </div>
-<!-- 这行是我加的"玩梗声明"，不想要直接删掉这一个 div 即可 -->
-<p class="rule-note scroll-item">以上守则均为服务器设定文案与氛围玩梗，游戏中不存在超自然现象，请安心游玩。</p>
+<p class="rule-note reveal">以上守则均为服务器设定文案与氛围玩梗，游戏中不存在超自然现象，请安心游玩。</p>
 </div>
 </section>
 
-<footer><div class="container">© 2026 生生生生生存 保留所有权利</div></footer>
+<section class="cta">
+<div class="wrap reveal">
+<p class="cta-line">准备好开始了吗</p>
+<a class="btn primary lg" href="download.html">下载游戏</a>
+</div>
+</section>
+</main>
+
+<footer>
+<div class="wrap">
+<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.9 21 7.6v8.8L12 21.1 3 16.4V7.6z"/><path d="M3 7.6l9 4.7 9-4.7M12 12.3v8.8"/></svg>© 2026 生生生生生存 保留所有权利
+</div>
+</footer>
 
 <script>
 // 服务器配置区（只需修改这里）
@@ -133,16 +330,22 @@ const cfg = {
 const addr = cfg.ip + ":" + cfg.port;
 const $ = id => document.getElementById(id);
 $("ipAddr").textContent = addr;
-$("versionTxt").textContent = "版本：" + cfg.version;
+$("versionTxt").textContent = cfg.version;
 
 /* ===== 复制地址 ===== */
 const copyBtn = $("copyBtn");
 let copyTimer;
 function copyDone(ok) {
   clearTimeout(copyTimer);
-  copyBtn.textContent = ok ? "复制成功！" : "请长按地址手动复制";
+  copyBtn.textContent = ok ? "复制成功" : "请手动复制";
   copyBtn.classList.toggle("success-state", ok);
-  copyTimer = setTimeout(() => { copyBtn.textContent = "复制地址"; copyBtn.classList.remove("success-state"); }, 2000);
+  copyBtn.classList.remove("primary");
+  if (!ok) copyBtn.classList.add("ghost");
+  copyTimer = setTimeout(() => {
+    copyBtn.textContent = "复制地址";
+    copyBtn.classList.remove("success-state", "ghost");
+    copyBtn.classList.add("primary");
+  }, 2000);
 }
 function fallbackCopy(text) {
   const ta = document.createElement("textarea");
@@ -172,14 +375,12 @@ try {
 } catch (e) {}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(points)); } catch (e) {} }
 function prune() { const t = Date.now() - maxAge; points = points.filter(p => p.time >= t); }
-// 统一排序 + 合并 1 秒内的重复点
-// 本机记录和后台 data.json 来自两个时钟源，用"排序去重"合并，谁快谁慢都不会丢数据或出现竖直折返
+// 统一排序 + 合并 1 秒内的重复点（本机记录与后台 data.json 来自两个时钟源）
 function normalize() {
   points.sort((a, b) => a.time - b.time);
   points = points.filter((p, i, arr) => i === 0 || p.time - arr[i - 1].time > 1000);
 }
-// 记录规则：人数变化立刻记一个点；人数不变时最多每 sampleMs 补一个点。
-// 这样能保留平台期的起点（曲线不会缩成右上角一个点），数据量也不会无限膨胀。
+// 人数变化立刻记点；人数不变时最多每 sampleMs 补一个点，既保留平台期起点也不膨胀
 function record(num) {
   const now = Date.now(), last = points[points.length - 1];
   if (!last || last.num !== num || now - last.time >= cfg.sampleMs) points.push({ time: now, num });
@@ -188,68 +389,119 @@ function record(num) {
 
 /* ===== 图表 ===== */
 const canvas = $("playerChart"), ctx = canvas.getContext("2d");
-const pad = { top: 16, right: 16, bottom: 34, left: 40 };
+const pad = { top: 20, right: 26, bottom: 34, left: 42 };
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const CSS = getComputedStyle(document.documentElement);
 function hhmm(d) {
   return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
 }
 function resizeCanvas() {
   const r = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
-  if (!r.width || !r.height) return;          // 未布局时直接跳过，避免把画布尺寸清零
+  if (!r.width || !r.height) return;
   canvas.width = Math.round(r.width * dpr);
   canvas.height = Math.round(r.height * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   drawChart();
 }
+// Fritsch–Carlson 单调三次插值：曲线平滑但不过冲。
+// 人数是阶梯型数据，用普通贝塞尔/样条会在台阶处冲出负数尖角，这个算法可以避免。
+function traceSmooth(p) {
+  const n = p.length;
+  ctx.moveTo(p[0].x, p[0].y);
+  if (n < 3) { for (let i = 1; i < n; i++) ctx.lineTo(p[i].x, p[i].y); return; }
+  const dx = [], m = [], t = new Array(n);
+  for (let i = 0; i < n - 1; i++) {
+    dx[i] = p[i + 1].x - p[i].x;
+    m[i] = dx[i] ? (p[i + 1].y - p[i].y) / dx[i] : 0;
+  }
+  t[0] = m[0]; t[n - 1] = m[n - 2];
+  for (let i = 1; i < n - 1; i++) t[i] = (m[i - 1] * m[i] <= 0) ? 0 : (m[i - 1] + m[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (m[i] === 0) { t[i] = 0; t[i + 1] = 0; continue; }
+    const a = t[i] / m[i], b = t[i + 1] / m[i], h = Math.hypot(a, b);
+    if (h > 3) { t[i] = 3 * m[i] * a / h; t[i + 1] = 3 * m[i] * b / h; }
+  }
+  for (let i = 0; i < n - 1; i++) {
+    const h = dx[i] / 3;
+    ctx.bezierCurveTo(p[i].x + h, p[i].y + t[i] * h, p[i + 1].x - h, p[i + 1].y - t[i + 1] * h, p[i + 1].x, p[i + 1].y);
+  }
+}
 function drawChart() {
   const w = canvas.clientWidth, h = canvas.clientHeight;
   if (!w || !h) return;
   const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom, now = Date.now();
-  const maxNum = points.reduce((m, p) => Math.max(m, p.num), 0);
+  const baseY = pad.top + ch;
+  const maxNum = points.reduce((mx, p) => Math.max(mx, p.num), 0);
   const maxY = Math.max(5, Math.ceil(maxNum / 5) * 5);
   ctx.clearRect(0, 0, w, h);
-  ctx.lineWidth = 1; ctx.strokeStyle = "rgba(76,140,43,.25)";
-  ctx.fillStyle = "#aaa"; ctx.font = "11px sans-serif";
+  ctx.font = "11px " + (CSS.getPropertyValue("--mono") || "monospace");
+  ctx.textBaseline = "middle";
+
+  // 横向刻度（无竖网格，更干净）
   ctx.textAlign = "right";
   for (let i = 0; i <= 5; i++) {
-    const y = pad.top + ch - ch / 5 * i;
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-    ctx.fillText(maxY / 5 * i, pad.left - 8, y + 4);
+    const y = Math.round(baseY - ch / 5 * i) + .5;
+    ctx.beginPath();
+    ctx.strokeStyle = i === 0 ? "rgba(255,255,255,.13)" : "rgba(255,255,255,.05)";
+    ctx.lineWidth = 1;
+    ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
+    ctx.fillStyle = "rgba(233,238,232,.32)";
+    ctx.fillText(String(maxY / 5 * i), pad.left - 10, y);
   }
-  ctx.textAlign = "center";
+  // 时间刻度：首尾贴边对齐，避免文字被画布裁掉
+  ctx.textBaseline = "top";
   for (let i = 0; i <= 6; i++) {
-    const x = pad.left + cw / 6 * i, d = new Date(now - maxAge / 6 * (6 - i));
-    ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + ch); ctx.stroke();
-    ctx.fillText(hhmm(d), x, h - pad.bottom + 18);
+    const x = pad.left + cw / 6 * i;
+    const d = new Date(now - maxAge / 6 * (6 - i));
+    ctx.textAlign = i === 0 ? "left" : i === 6 ? "right" : "center";
+    ctx.fillStyle = "rgba(233,238,232,.26)";
+    ctx.fillText(hhmm(d), i === 0 ? pad.left - 4 : i === 6 ? w - pad.right + 4 : x, baseY + 11);
   }
-  ctx.strokeStyle = "#4c8c2b"; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + ch); ctx.lineTo(w - pad.right, pad.top + ch); ctx.stroke();
-  if (!points.length) { ctx.fillStyle = "#888"; ctx.fillText("暂无数据", pad.left + cw / 2, pad.top + ch / 2); return; }
+
+  if (!points.length) {
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = "rgba(233,238,232,.28)";
+    ctx.font = "12px " + (CSS.getPropertyValue("--mono") || "monospace");
+    ctx.fillText("暂无数据", pad.left + cw / 2, pad.top + ch / 2);
+    return;
+  }
 
   // 时间与人数都夹在绘图区内，时钟偏差的点也不会画到画布外
   const px = t => clamp(pad.left + (t - (now - maxAge)) / maxAge * cw, pad.left, pad.left + cw);
-  const py = n => clamp(pad.top + ch - n / maxY * ch, pad.top, pad.top + ch);
+  const py = n => clamp(baseY - n / maxY * ch, pad.top, baseY);
   const pts = points.map(p => ({ x: px(p.time), y: py(p.num) }));
-  // 延伸到当前时间，让曲线始终贴到右侧
-  pts.push({ x: px(now), y: pts[pts.length - 1].y });
+  pts.push({ x: px(now), y: pts[pts.length - 1].y });   // 曲线始终贴到右侧
 
-  ctx.beginPath(); ctx.moveTo(pts[0].x, pad.top + ch);
-  pts.forEach(p => ctx.lineTo(p.x, p.y));
-  ctx.lineTo(pts[pts.length - 1].x, pad.top + ch); ctx.closePath();
-  const g = ctx.createLinearGradient(0, pad.top, 0, pad.top + ch);
-  g.addColorStop(0, "rgba(76,140,43,.4)"); g.addColorStop(1, "rgba(76,140,43,0)");
+  // 面积
+  ctx.beginPath(); traceSmooth(pts);
+  ctx.lineTo(pts[pts.length - 1].x, baseY); ctx.lineTo(pts[0].x, baseY); ctx.closePath();
+  const g = ctx.createLinearGradient(0, pad.top, 0, baseY);
+  g.addColorStop(0, "rgba(163,224,99,.26)");
+  g.addColorStop(.55, "rgba(163,224,99,.07)");
+  g.addColorStop(1, "rgba(163,224,99,0)");
   ctx.fillStyle = g; ctx.fill();
 
-  ctx.strokeStyle = "#4c8c2b"; ctx.lineWidth = 2.5; ctx.lineJoin = "round";
-  ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
+  // 曲线 + 辉光
+  ctx.beginPath(); traceSmooth(pts);
+  ctx.lineWidth = 2.2; ctx.lineJoin = "round"; ctx.lineCap = "round";
+  ctx.strokeStyle = "#a3e063";
+  ctx.shadowColor = "rgba(163,224,99,.45)"; ctx.shadowBlur = 14;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // 末端光点
   const last = pts[pts.length - 1];
-  ctx.fillStyle = "#8bc34a"; ctx.beginPath(); ctx.arc(last.x, last.y, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(last.x, last.y, 8, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(163,224,99,.14)"; ctx.fill();
+  ctx.beginPath(); ctx.arc(last.x, last.y, 3.4, 0, Math.PI * 2);
+  ctx.fillStyle = "#d3f79c"; ctx.fill();
 }
 
 /* ===== 状态检测 ===== */
-const statDom = $("serverStat"), playerDom = $("playerNum"), refreshBtn = $("refreshBtn"), lastUpd = $("lastUpd");
+const statDom = $("serverStat"), playerDom = $("playerNum"), refreshBtn = $("refreshBtn"),
+      lastUpd = $("lastUpd"), dot = $("dot");
 let busy = false;
-function setStat(text, cls) { statDom.textContent = text; statDom.className = "info-tag " + cls; }
+function setStat(text, cls) { statDom.textContent = text; dot.className = "dot " + cls; }
 // 统一超时处理：优先用 AbortController，老浏览器退化为 Promise.race
 function fetchTimeout(url, ms) {
   if ("AbortController" in window) {
@@ -269,28 +521,28 @@ function fetchTimeout(url, ms) {
 async function checkServer() {
   if (busy) return;
   busy = true; refreshBtn.disabled = true;
-  statDom.textContent = "刷新中...";
+  setStat("刷新中", "warn");
   try {
     const res = await fetchTimeout("https://api.mcstatus.io/v2/status/java/" + addr, cfg.timeout);
     if (!res.ok) throw new Error("http " + res.status);
     const d = await res.json();
     lastUpd.textContent = "最近更新：" + hhmm(new Date());
     if (d && d.online) {
-      if (d.version && d.version.name) $("versionTxt").textContent = "版本：" + d.version.name;
+      if (d.version && d.version.name) $("versionTxt").textContent = d.version.name;
       const on = d.players && Number.isFinite(d.players.online) ? d.players.online : 0;
       const max = d.players && Number.isFinite(d.players.max) ? d.players.max : "--";
-      playerDom.textContent = "在线：" + on + "/" + max;
+      playerDom.textContent = on + " / " + max;
       canvas.setAttribute("aria-label", "近12小时在线人数折线图，当前在线 " + on + " 人");
-      setStat("状态：正常", "online");
+      setStat("正常", "on");
       record(on);
     } else {
-      playerDom.textContent = "在线：0/--";
-      setStat("状态：离线", "offline");
+      playerDom.textContent = "0 / --";
+      setStat("离线", "off");
       record(0);
     }
   } catch (e) {
     // 请求失败时不写入图表，避免把"查询失败"误记为 0 人
-    setStat(e && e.name === "AbortError" ? "状态：查询超时" : "状态：查询失败", "unknown");
+    setStat(e && e.name === "AbortError" ? "查询超时" : "查询失败", "warn");
   } finally {
     busy = false; refreshBtn.disabled = false;
   }
@@ -322,7 +574,6 @@ function startPoll() {
     if (++tick % cfg.remoteEvery === 0 && await loadRemote()) drawChart();
   }, cfg.interval);
 }
-// 页面切到后台时暂停轮询，回到前台立即刷新
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) clearInterval(poll);
   else { checkServer(); startPoll(); }
@@ -331,22 +582,29 @@ document.addEventListener("visibilitychange", () => {
 let rt;
 window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(resizeCanvas, 150); });
 
+/* ===== 吸顶导航：滚动后才浮现毛玻璃 ===== */
+const nav = $("nav");
+function onScroll() { nav.classList.toggle("scrolled", window.scrollY > 16); }
+window.addEventListener("scroll", onScroll, { passive: true });
+
+/* ===== 入场动画 ===== */
+const items = document.querySelectorAll(".reveal");
+if ("IntersectionObserver" in window) {
+  const obs = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add("in"); obs.unobserve(e.target); }
+  }), { threshold: .12, rootMargin: "0px 0px -8% 0px" });
+  items.forEach(i => obs.observe(i));
+} else items.forEach(i => i.classList.add("in"));
+
+/* ===== 启动 ===== */
 window.addEventListener("load", async () => {
+  onScroll();
   prune(); normalize();
   resizeCanvas();
-  if (await loadRemote()) drawChart();   // resizeCanvas 已经画过一次，这里只在数据有更新时重绘
+  if (await loadRemote()) drawChart();
   setTimeout(checkServer, 300);
   startPoll();
 });
-
-/* ===== 滚动渐入 ===== */
-const items = document.querySelectorAll(".scroll-item");
-if ("IntersectionObserver" in window) {
-  const obs = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add("animate"); obs.unobserve(e.target); }
-  }), { threshold: .1 });
-  items.forEach(i => obs.observe(i));
-} else items.forEach(i => i.classList.add("animate"));
 </script>
 </body>
 </html>
