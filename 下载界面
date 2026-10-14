@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>下载整合包 - 生生生生生存</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--primary:#4c8c2b;--accent:#8bc34a;--bg:#1e1e1e;--success:#2e7d32}
+body{background:var(--bg);color:#fff;font-family:"PingFang SC","Microsoft Yahei",sans-serif;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+header{padding:20px 0;text-align:center;background:linear-gradient(rgba(34,51,24,.6),rgba(0,0,0,.5))}
+header a{color:var(--primary);text-decoration:none;font-size:clamp(1.6rem,4vw,2.2rem);font-weight:bold}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:30px 15px}
+.card{width:100%;max-width:520px;padding:30px 24px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;text-align:center}
+.card h1{color:var(--primary);font-size:1.6rem;margin-bottom:8px}
+.card p{color:rgba(255,255,255,.7);margin-bottom:18px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:24px}
+.tag{background:rgba(0,0,0,.25);color:var(--accent);padding:4px 12px;border-radius:20px;font-size:14px}
+.btn{display:inline-block;background:var(--primary);color:#fff;border:none;padding:12px 28px;border-radius:6px;cursor:pointer;font-size:16px;font-family:inherit;text-decoration:none;transition:transform .2s,filter .2s;touch-action:manipulation}
+.btn.big{display:block;width:100%;font-size:18px;padding:14px}
+.btn.ghost{background:rgba(0,0,0,.3);font-size:14px;padding:8px 16px;margin-top:14px}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(hover:hover){.btn:hover{filter:brightness(1.1);transform:translateY(-2px)}}
+.btn:active{transform:scale(.97)}
+.btn.success-state{background:var(--success)}
+.tips{margin-top:22px;text-align:left;font-size:14px;color:rgba(255,255,255,.6);background:rgba(0,0,0,.2);border-radius:6px;padding:12px 16px}
+.tips li{margin-left:18px}
+.back{display:inline-block;margin-top:18px;color:var(--accent);font-size:14px}
+footer{padding:20px 0;text-align:center;font-size:.9rem;color:rgba(255,255,255,.5)}
+</style>
+</head>
+<body>
+<header><a href="./">生生生生生存</a></header>
+
+<main>
+<div class="card">
+<h1>下载整合包</h1>
+<p>下载后解压，用启动器打开即可进入游戏</p>
+<div class="tags"><span class="tag">版本 v0.1</span><span class="tag">default.zip</span></div>
+
+<a class="btn big" id="dlBtn" href="https://github.com/oneffsd/oneffsd.github.io/releases/download/v0.1/default.zip" download>⬇ 点击下载整合包</a>
+<button class="btn ghost" id="copyBtn" type="button">复制下载链接</button>
+
+<ul class="tips">
+<li>下载慢或打不开时，可复制链接用下载工具或浏览器新窗口打开</li>
+<li>压缩包请先解压，不要直接在压缩包内运行</li>
+</ul>
+<a class="back" href="./">← 返回首页</a>
+</div>
+</main>
+
+<footer>© 2026 生生生生生存 保留所有权利</footer>
+
+<script>
+const btn = document.getElementById("copyBtn");
+const url = document.getElementById("dlBtn").href;
+let t;
+function done(ok) {
+  clearTimeout(t);
+  btn.textContent = ok ? "已复制！" : "复制失败，请手动复制";
+  btn.classList.toggle("success-state", ok);
+  t = setTimeout(() => { btn.textContent = "复制下载链接"; btn.classList.remove("success-state"); }, 2000);
+}
+function fallback() {
+  const ta = document.createElement("textarea");
+  ta.value = url; ta.style.cssText = "position:fixed;left:-9999px";
+  document.body.appendChild(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta); done(ok);
+}
+btn.addEventListener("click", () => {
+  if (navigator.clipboard && window.isSecureContext)
+    navigator.clipboard.writeText(url).then(() => done(true), fallback);
+  else fallback();
+});
+</script>
+</body>
+</html>
