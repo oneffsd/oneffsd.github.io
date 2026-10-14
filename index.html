@@ -453,14 +453,15 @@ function drawChart() {
     ctx.fillStyle = "rgba(233,238,232,.32)";
     ctx.fillText(String(maxY / 5 * i), pad.left - 10, y);
   }
-  // 时间刻度：首尾贴边对齐，避免文字被画布裁掉
+  // 时间刻度：按可用宽度决定显示几个，窄屏自动减，避免文字叠在一起
   ctx.textBaseline = "top";
-  for (let i = 0; i <= 6; i++) {
-    const x = pad.left + cw / 6 * i;
-    const d = new Date(now - maxAge / 6 * (6 - i));
-    ctx.textAlign = i === 0 ? "left" : i === 6 ? "right" : "center";
-    ctx.fillStyle = "rgba(233,238,232,.26)";
-    ctx.fillText(hhmm(d), i === 0 ? pad.left - 4 : i === 6 ? w - pad.right + 4 : x, baseY + 11);
+  const T = cw < 260 ? 2 : cw < 360 ? 3 : cw < 460 ? 4 : 6;
+  for (let i = 0; i <= T; i++) {
+    const x = pad.left + cw / T * i;
+    const d = new Date(now - maxAge / T * (T - i));
+    ctx.textAlign = i === 0 ? "left" : i === T ? "right" : "center";
+    ctx.fillStyle = "rgba(233,238,232,.28)";
+    ctx.fillText(hhmm(d), i === 0 ? pad.left - 2 : i === T ? w - pad.right + 2 : x, baseY + 11);
   }
 
   if (!points.length) {
