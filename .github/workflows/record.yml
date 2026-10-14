@@ -1,0 +1,44 @@
+name: record-players
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: record-players
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch player count and append to data.json
+        run: |
+          ADDR="114.66.40.127:604"
+          NOW=$(( $(date +%s) * 1000 ))
+          CUTOFF=$(( NOW - 24*3600*1000 ))
+
+          RES=$(curl -s -m 20 "https://api.mcstatus.io/v2/status/java/$ADDR" || true)
+          if ! NUM=$(echo "$RES" | jq -e 'if .online == true then (.players.online // 0) elif .online == false then 0 else empty end'); then
+            echo "query failed, skip"; exit 0
+          fi
+
+          [ -f data.json ] || echo '[]' > data.json
+          jq -c --argjson t "$NOW" --argjson n "$NUM" --argjson c "$CUTOFF" \
+            '(. + [{time:$t,num:$n}]) | map(select(.time >= $c))' data.json > data.tmp
+          mv data.tmp data.json
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git commit -m "update player data" || exit 0
+          git pull --rebase
+          git push
