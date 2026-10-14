@@ -20,7 +20,7 @@ jobs:
 
       - name: Fetch player count and append to data.json
         run: |
-          ADDR="114.66.40.127:604"
+          ADDR="114.66.40.127:6043"
           NOW=$(( $(date +%s) * 1000 ))
           CUTOFF=$(( NOW - 24*3600*1000 ))
 
