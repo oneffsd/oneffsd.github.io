@@ -4,73 +4,351 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="生生生生生存 - 整合包与客户端下载">
-<meta name="theme-color" content="#4c8c2b">
+<meta name="theme-color" content="#080b09" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f8f5" media="(prefers-color-scheme: light)">
 <title>下载整合包 - 生生生生生存</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--primary:#4c8c2b;--accent:#8bc34a;--bg:#1e1e1e;--success:#2e7d32}
-body{background:var(--bg);color:#fff;font-family:"PingFang SC","Microsoft Yahei",sans-serif;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
-header{padding:20px 0;text-align:center;background:linear-gradient(rgba(34,51,24,.6),rgba(0,0,0,.5))}
-header a{color:var(--primary);text-decoration:none;font-size:clamp(1.6rem,4vw,2.2rem);font-weight:bold}
-main{flex:1;display:flex;align-items:center;justify-content:center;padding:30px 15px}
-.card{width:100%;max-width:520px;padding:30px 24px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;text-align:center}
-.card h1{color:var(--primary);font-size:1.6rem;margin-bottom:8px}
-.card p{color:rgba(255,255,255,.7);margin-bottom:18px}
-.tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:24px;min-height:30px}
-.tag{background:rgba(0,0,0,.25);color:var(--accent);padding:4px 12px;border-radius:20px;font-size:14px}
-.tag.warn{color:#ffb300;border:1px solid rgba(255,179,0,.45)}
-/* 长文件名不撑破卡片 */
-.tag,.more a,.hash{max-width:100%;word-break:break-all}
-.btn{display:inline-block;background:var(--primary);color:#fff;border:none;padding:12px 28px;border-radius:6px;cursor:pointer;font-size:16px;font-family:inherit;text-decoration:none;transition:transform .2s,filter .2s;touch-action:manipulation}
-.btn.big{display:block;width:100%;font-size:18px;padding:14px}
-.btn.ghost{background:rgba(0,0,0,.3);font-size:14px;padding:8px 16px;margin-top:14px}
-.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media(hover:hover){.btn:hover{filter:brightness(1.1);transform:translateY(-2px)}}
+[hidden]{display:none!important}
+
+:root{
+  color-scheme:dark;
+  --bg:#080b09;--text:#e9eee8;
+  --muted:rgba(233,238,232,.56);
+  --faint:rgba(233,238,232,.34);
+  --line:rgba(255,255,255,.075);
+  --line-hi:rgba(163,224,99,.3);
+  --accent:#a3e063;--accent-deep:#6fa84b;
+  --warn:#d9a441;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --ease:cubic-bezier(.2,.7,.3,1);
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);line-height:1.7;font-size:16px;min-height:100vh;
+  display:flex;flex-direction:column;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+.wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ===================== 背景装饰层 ===================== */
+.bg{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 12% -12%,rgba(111,168,75,.22),transparent 62%),
+    radial-gradient(760px 460px at 92% -6%,rgba(56,132,116,.16),transparent 66%),
+    radial-gradient(1100px 700px at 50% 118%,rgba(111,168,75,.09),transparent 62%),
+    linear-gradient(180deg,#080b09 0%,#0a0f0b 45%,#080b09 100%)}
+.bg::before{content:"";position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(78% 46% at 50% 0%,#000,transparent 78%);
+  mask-image:radial-gradient(78% 46% at 50% 0%,#000,transparent 78%)}
+.bg::after{content:"";position:absolute;inset:0;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ===================== 动效层 ===================== */
+.fx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.fx-top{position:fixed;inset:0;z-index:45;pointer-events:none;overflow:hidden}
+.bw{position:absolute;will-change:transform}
+#bw1{width:58vw;height:58vw;left:-12vw;top:-16vw}
+#bw2{width:46vw;height:46vw;right:-10vw;top:-8vw}
+#bw3{width:68vw;height:68vw;left:18vw;top:30vh}
+.blob{position:absolute;inset:0;border-radius:50%}
+.b1{background:radial-gradient(circle at 50% 50%,rgba(111,168,75,.24),transparent 66%);
+  animation:drift1 26s ease-in-out infinite alternate}
+.b2{background:radial-gradient(circle at 50% 50%,rgba(56,132,116,.20),transparent 68%);
+  animation:drift2 34s ease-in-out infinite alternate}
+.b3{background:radial-gradient(circle at 50% 50%,rgba(163,224,99,.10),transparent 70%);
+  animation:drift3 42s ease-in-out infinite alternate}
+@keyframes drift1{0%{transform:translate3d(-7%,-5%,0) scale(1)}100%{transform:translate3d(9%,11%,0) scale(1.14)}}
+@keyframes drift2{0%{transform:translate3d(6%,8%,0) scale(1.08)}100%{transform:translate3d(-9%,-6%,0) scale(.94)}}
+@keyframes drift3{0%{transform:translate3d(-5%,6%,0) scale(.96)}100%{transform:translate3d(7%,-9%,0) scale(1.1)}}
+.motes{position:absolute;inset:0;display:block;width:100%;height:100%}
+.spot,.spark,.ripple{position:absolute;left:0;top:0;border-radius:50%;will-change:transform;opacity:0}
+.spot{width:680px;height:680px;margin:-340px 0 0 -340px;
+  background:radial-gradient(circle,rgba(163,224,99,.115),rgba(163,224,99,.05) 36%,transparent 68%);
+  transition:opacity 1s var(--ease)}
+.spark{width:196px;height:196px;margin:-98px 0 0 -98px;
+  background:radial-gradient(circle,rgba(214,255,175,.22),rgba(163,224,99,.06) 45%,transparent 72%);
+  transition:opacity 1s var(--ease)}
+.fx-on .spot,.fx-on .spark{opacity:1}
+.ripple{width:72px;height:72px;margin:-36px 0 0 -36px;border:1px solid rgba(163,224,99,.55);
+  box-shadow:0 0 26px rgba(163,224,99,.22) inset}
+.ripple.go{animation:ping .9s var(--ease) forwards}
+@keyframes ping{0%{opacity:.55;transform:scale(.5)}100%{opacity:0;transform:scale(2.4)}}
+
+/* ===================== 吸顶导航 ===================== */
+.nav{position:sticky;top:0;z-index:60;border-bottom:1px solid transparent;
+  transition:background .35s,border-color .35s,backdrop-filter .35s}
+.nav.scrolled{background:rgba(8,11,9,.72);backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom-color:var(--line)}
+.nav-inner{height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);
+  font-weight:700;letter-spacing:.06em}
+.brand .mark{width:22px;height:22px;flex-shrink:0;color:var(--accent);
+  filter:drop-shadow(0 0 8px rgba(163,224,99,.35))}
+.brand .mark path{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linejoin:round}
+.nav-links{display:flex;align-items:center;gap:26px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.9rem;letter-spacing:.06em;transition:color .25s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{color:var(--text)!important;padding:8px 16px;border:1px solid var(--line);border-radius:999px;
+  transition:border-color .25s,background .25s}
+.nav-cta:hover{border-color:var(--line-hi);background:rgba(163,224,99,.08)}
+
+/* ===================== 按钮 ===================== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font:inherit;font-size:.92rem;
+  font-weight:600;padding:12px 20px;border-radius:11px;border:1px solid var(--line);
+  background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;text-decoration:none;
+  letter-spacing:.02em;min-width:104px;
+  transition:transform .25s var(--ease),background .25s,border-color .25s,box-shadow .25s,filter .25s;
+  touch-action:manipulation}
 .btn:active{transform:scale(.97)}
-.btn.success-state{background:var(--success)}
-.hash{margin-top:12px;font-size:12px;font-family:monospace;color:rgba(255,255,255,.45);user-select:all}
-.more{margin-top:14px;font-size:14px;color:rgba(255,255,255,.6)}
-.more a{color:var(--accent);margin:0 6px;display:inline-block}
-.changelog{margin-top:22px;text-align:left;font-size:14px;color:rgba(255,255,255,.6);background:rgba(0,0,0,.2);border-radius:6px;padding:12px 16px}
-.changelog strong{color:var(--accent);display:block;margin-bottom:6px;font-weight:600}
-.changelog a{color:var(--accent)}
-.log-body{white-space:pre-wrap;word-break:break-word}
-.tips{margin-top:22px;text-align:left;font-size:14px;color:rgba(255,255,255,.6);background:rgba(0,0,0,.2);border-radius:6px;padding:12px 16px}
-.tips li{margin-left:18px}
-.back{display:inline-block;margin-top:18px;color:var(--accent);font-size:14px}
-footer{padding:20px 0;text-align:center;font-size:.9rem;color:rgba(255,255,255,.5)}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.btn.primary{color:#07130a;border-color:transparent;
+  background:linear-gradient(180deg,#a8e46a,#5f9b3e);
+  box-shadow:0 14px 30px -16px rgba(143,206,92,.9),inset 0 1px 0 rgba(255,255,255,.4)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent}
+.btn.ghost:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18)}
+.btn.success-state{color:#07130a;border-color:transparent;background:linear-gradient(180deg,#9fe267,#57933a)}
+.btn.big{display:flex;width:100%;font-size:1.02rem;padding:16px 20px;margin-top:22px}
+.btn.sm{font-size:.84rem;padding:9px 16px;min-width:0;margin-top:12px}
+@media(hover:hover){.btn:not(:disabled):hover{transform:translateY(-2px)}}
+.ico{width:19px;height:19px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+
+/* ===================== 页头 ===================== */
+main{flex:1}
+.head{text-align:center;padding:clamp(52px,9vw,110px) 0 clamp(28px,4vw,40px)}
+.eyebrow{font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin-bottom:20px}
+/* 渐变文字：background 简写必须写在 background-clip 之前，覆盖时只能用 background-image */
+.head h1{font-size:clamp(2.2rem,5.4vw,3.4rem);font-weight:800;letter-spacing:.04em;line-height:1.14;
+  background:linear-gradient(180deg,#ffffff 4%,#d5ecbd 52%,#8fca63 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 14px 32px rgba(111,168,75,.28))}
+.head p{margin-top:18px;color:var(--muted);font-size:clamp(.9rem,2.2vw,1rem)}
+
+/* ===================== 版本卡 ===================== */
+.release-card{position:relative;max-width:640px;margin:0 auto;padding:32px 28px 28px;border-radius:20px;
+  text-align:center;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.018));
+  border:1px solid var(--line);
+  box-shadow:0 34px 66px -40px rgba(0,0,0,.95),inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.rc-label{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--faint)}
+.rc-name{margin-top:12px;font-size:clamp(1.25rem,3.4vw,1.6rem);font-weight:700;letter-spacing:.03em;
+  word-break:break-word}
+.tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px;min-height:26px}
+.tag{background:rgba(0,0,0,.28);color:var(--accent);border:1px solid var(--line);
+  padding:5px 12px;border-radius:999px;font-size:.76rem;font-family:var(--mono);letter-spacing:.02em;
+  max-width:100%;word-break:break-all}
+.tag.warn{color:var(--warn);border-color:rgba(217,164,65,.45);font-family:inherit}
+.hash{margin-top:16px;font-size:.7rem;font-family:var(--mono);color:var(--faint);
+  word-break:break-all;user-select:all;line-height:1.65}
+.more{margin-top:16px;font-size:.82rem;color:var(--muted);line-height:2}
+.more a{color:var(--accent);text-decoration:none;margin-right:10px;display:inline-block;
+  border-bottom:1px dashed rgba(163,224,99,.35);word-break:break-all}
+.more a:hover{border-bottom-style:solid}
+
+/* ===================== 信息面板 ===================== */
+.panel{position:relative;max-width:640px;margin:18px auto 0;padding:24px 26px;border-radius:18px;text-align:left;
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.012));
+  border:1px solid var(--line);
+  box-shadow:0 26px 54px -40px rgba(0,0,0,.9)}
+.panel h2{font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);
+  font-weight:600;margin-bottom:14px}
+.log-body{white-space:pre-wrap;word-break:break-word;color:var(--muted);font-size:.9rem;line-height:1.85}
+.panel a.more-link{display:inline-block;margin-top:12px;color:var(--accent);text-decoration:none;font-size:.84rem}
+.panel a.more-link:hover{text-decoration:underline}
+.tips{list-style:none;display:grid;gap:13px}
+.tips li{position:relative;padding-left:22px;color:var(--muted);font-size:.9rem;line-height:1.75}
+.tips li::before{content:"";position:absolute;left:4px;top:.7em;width:5px;height:5px;border-radius:50%;
+  background:var(--accent);opacity:.8}
+.tips code{font-family:var(--mono);color:var(--accent);background:rgba(0,0,0,.3);
+  padding:1px 6px;border-radius:5px;font-size:.85em}
+
+/* ===================== 页脚 ===================== */
+footer{border-top:1px solid var(--line);padding:30px 0;text-align:center;
+  font-size:.82rem;color:var(--faint);letter-spacing:.05em}
+footer .mark{width:16px;height:16px;vertical-align:-3px;margin-right:8px;color:var(--accent-deep)}
+footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
+
+/* ===================== 卡片光标高光 ===================== */
+.release-card::after,.panel::after{content:"";position:absolute;inset:0;border-radius:inherit;
+  pointer-events:none;opacity:0;transition:opacity .45s var(--ease);
+  background:radial-gradient(280px circle at var(--mx,50%) var(--my,50%),rgba(163,224,99,.12),transparent 72%)}
+@media(hover:hover) and (pointer:fine){
+  .release-card:hover::after,.panel:hover::after{opacity:1}
+}
+
+/* ===================== 入场动画 ===================== */
+.reveal{opacity:0;transform:translateY(22px);
+  transition:opacity .8s var(--ease),transform .8s var(--ease);
+  transition-delay:calc(var(--d,0) * 80ms)}
+.reveal.in{opacity:1;transform:none}
+
+/* ===================== 小屏 ===================== */
+@media(max-width:700px){
+  #bw1{width:92vw;height:92vw;left:-24vw;top:-8vw}
+  #bw2{width:78vw;height:78vw;right:-22vw;top:2vw}
+  #bw3{width:104vw;height:104vw;left:6vw;top:40vh}
+}
+@media(max-width:640px){
+  .nav-links a:not(.nav-cta){display:none}
+  .wrap{padding:0 18px}
+  .release-card{padding:26px 20px 22px;border-radius:18px}
+  .panel{padding:20px 18px}
+  .btn.sm{width:100%}
+}
+
+/* ===================== 浅色主题 ===================== */
+@media (prefers-color-scheme: light){
+  :root{
+    color-scheme:light;
+    --bg:#f7f8f5;--text:#141a10;
+    --muted:rgba(20,28,16,.66);--faint:rgba(20,28,16,.50);
+    --line:rgba(20,30,12,.10);--line-hi:rgba(80,140,40,.38);
+    --accent:#3d7a1e;--accent-deep:#4e8a2c;--warn:#a86a12;
+  }
+  body{background:var(--bg)}
+
+  .bg{background:
+    radial-gradient(900px 520px at 12% -12%,rgba(111,168,75,.20),transparent 62%),
+    radial-gradient(760px 460px at 92% -6%,rgba(56,132,116,.14),transparent 66%),
+    radial-gradient(1100px 700px at 50% 118%,rgba(111,168,75,.10),transparent 62%),
+    linear-gradient(180deg,#f8faf6 0%,#eef3ea 45%,#f8faf6 100%)}
+  .bg::before{background-image:
+    linear-gradient(rgba(20,40,10,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(20,40,10,.055) 1px,transparent 1px)}
+  .bg::after{opacity:.028}
+
+  .b1{background:radial-gradient(circle at 50% 50%,rgba(111,168,75,.17),transparent 66%)}
+  .b2{background:radial-gradient(circle at 50% 50%,rgba(56,132,116,.13),transparent 68%)}
+  .b3{background:radial-gradient(circle at 50% 50%,rgba(140,200,80,.11),transparent 70%)}
+  .spot{background:radial-gradient(circle,rgba(120,180,60,.13),rgba(120,180,60,.05) 36%,transparent 68%)}
+  .spark{background:radial-gradient(circle,rgba(150,205,90,.20),rgba(120,180,60,.06) 45%,transparent 72%)}
+  .ripple{border-color:rgba(80,140,40,.5);box-shadow:0 0 26px rgba(80,140,40,.18) inset}
+  .release-card::after,.panel::after{
+    background:radial-gradient(280px circle at var(--mx,50%) var(--my,50%),rgba(110,170,50,.16),transparent 72%)}
+
+  .nav.scrolled{background:rgba(250,251,248,.78)}
+  .brand .mark{filter:drop-shadow(0 1px 4px rgba(80,140,40,.28))}
+  .nav-cta:hover{background:rgba(120,180,60,.12)}
+  .btn{background:rgba(20,30,12,.04)}
+  @media(hover:hover){.btn:not(:disabled):hover{background:rgba(20,30,12,.075)}}
+  .btn.ghost{background:transparent}
+  .btn.ghost:hover{background:rgba(20,30,12,.06);border-color:rgba(20,30,12,.2)}
+  .btn.primary{box-shadow:0 12px 24px -14px rgba(70,130,30,.7),inset 0 1px 0 rgba(255,255,255,.45)}
+
+  /* 标题渐变：必须用 background-image，用 background 简写会把 background-clip 重置掉 */
+  .head h1{background-image:linear-gradient(180deg,#1b260f 0%,#2f5c14 55%,#4b8a1e 100%);
+    filter:drop-shadow(0 10px 26px rgba(80,140,40,.22))}
+
+  .release-card{background:linear-gradient(180deg,#ffffff,#fbfdf9);
+    border-color:rgba(20,30,12,.09);
+    box-shadow:0 28px 54px -34px rgba(30,50,20,.30),inset 0 1px 0 #fff}
+  .panel{background:linear-gradient(180deg,#ffffff,#fbfdf9);
+    border-color:rgba(20,30,12,.09);
+    box-shadow:0 22px 44px -32px rgba(30,50,20,.28),inset 0 1px 0 #fff}
+  .tag{background:rgba(20,30,12,.05)}
+  .tag.warn{border-color:rgba(190,130,20,.45)}
+  .more a{border-bottom-color:rgba(61,122,30,.35)}
+  .tips code{background:rgba(20,30,12,.06)}
+}
+
+/* 老浏览器不支持渐变裁切时退化成纯色，别让文字消失 */
+@supports not ((-webkit-background-clip:text) or (background-clip:text)){
+  .head h1{background-image:none;color:var(--accent-deep)}
+}
+
+/* ===================== 减少动效 ===================== */
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+}
 </style>
 </head>
 <body>
-<header><a href="./">生生生生生存</a></header>
+
+<div class="bg" aria-hidden="true"></div>
+
+<!-- 动效层 -->
+<div class="fx" id="fx" aria-hidden="true">
+<div class="aurora">
+<div class="bw" id="bw1"><span class="blob b1"></span></div>
+<div class="bw" id="bw2"><span class="blob b2"></span></div>
+<div class="bw" id="bw3"><span class="blob b3"></span></div>
+</div>
+<canvas class="motes" id="motes"></canvas>
+<div class="spot" id="spot"></div>
+<div class="spark" id="spark"></div>
+</div>
+<div class="fx-top" id="fxTop" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+<div class="wrap nav-inner">
+<a class="brand" href="./">
+<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.9 21 7.6v8.8L12 21.1 3 16.4V7.6z"/><path d="M3 7.6l9 4.7 9-4.7M12 12.3v8.8"/></svg>
+<span>生生生生生存</span>
+</a>
+<nav class="nav-links">
+<a href="./#features">特性</a>
+<a href="./#rules">守则</a>
+<a class="nav-cta" href="./">返回首页</a>
+</nav>
+</div>
+</header>
 
 <main>
-<div class="card">
-<h1>下载整合包</h1>
-<!-- 初始文案对"没有 JS"的用户也是实话，加载成功后才被版本名覆盖 -->
-<p id="relName" aria-live="polite">点击下方按钮可直接前往 GitHub 下载</p>
+<section class="wrap head">
+<p class="eyebrow reveal">Download</p>
+<h1 class="reveal" style="--d:1">下载整合包</h1>
+<p class="reveal" style="--d:2">页面会自动读取 GitHub 上的最新发布版本，无需手动找链接。</p>
+</section>
+
+<section class="wrap" style="padding-bottom:clamp(56px,9vw,96px)">
+<div class="release-card reveal" style="--d:3">
+<div class="rc-label">最新版本</div>
+<div class="rc-name" id="relName">正在获取…</div>
 <div class="tags" id="tags"></div>
 
-<a class="btn big" id="dlBtn" href="https://github.com/oneffsd/oneffsd.github.io/releases/latest">前往 GitHub 下载最新版</a>
-<button class="btn ghost" id="copyBtn" type="button">复制下载链接</button>
+<a class="btn primary big" id="dlBtn" href="https://github.com/oneffsd/oneffsd.github.io/releases/latest">
+<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.6v10.8M7.6 10.4 12 14.8l4.4-4.4M4.6 19.4h14.8"/></svg>
+<span id="dlLabel">前往 GitHub 下载最新版</span>
+</a>
+<button class="btn ghost sm" id="copyBtn" type="button">复制下载链接</button>
 <div class="hash" id="hash" hidden></div>
 <div class="more" id="more" hidden></div>
-
-<div class="changelog" id="changelog" hidden></div>
-
-<ul class="tips">
-<li>页面会自动读取 GitHub 上的最新发布版本（含预发布版，会单独标注）</li>
-<li>下载慢或打不开时，可复制链接用下载工具或浏览器新窗口打开</li>
-<li>压缩包请先解压，不要直接在压缩包内运行</li>
-</ul>
-<a class="back" href="./">← 返回首页</a>
 </div>
+
+<div class="panel reveal" id="changelog" hidden></div>
+
+<div class="panel reveal" style="--d:1">
+<h2>使用提示</h2>
+<ul class="tips">
+<li>页面会自动读取 GitHub 上的最新发布版本，预发布版会单独标注。</li>
+<li>下载慢或打不开时，点上面的「复制下载链接」，用下载工具或新窗口打开会快很多。</li>
+<li>压缩包请先完整解压，不要直接在压缩包内双击运行。</li>
+<li>如果页面上出现了 <code>SHA-256</code>，可以用它核对文件有没有在下载过程中被改坏。</li>
+</ul>
+</div>
+</section>
 </main>
 
-<footer>© 2026 生生生生生存 保留所有权利</footer>
+<footer>
+<div class="wrap">
+<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.9 21 7.6v8.8L12 21.1 3 16.4V7.6z"/><path d="M3 7.6l9 4.7 9-4.7M12 12.3v8.8"/></svg>© 2026 生生生生生存 保留所有权利
+</div>
+</footer>
 
 <script>
-// ===== 配置区 =====
+/* ===================== 配置区 ===================== */
 const REPO = "oneffsd/oneffsd.github.io";
 const PAGE = "https://github.com/" + REPO + "/releases/latest";
 const API = "https://api.github.com/repos/" + REPO + "/releases";
@@ -79,10 +357,11 @@ const CACHE_TTL = 30 * 60e3;   // 超过 30 分钟仍可兜底展示，但会标
 const LOG_MAX = 500;           // 更新说明在页面上最多显示多少字
 
 const $ = id => document.getElementById(id);
-const dlBtn = $("dlBtn"), copyBtn = $("copyBtn"), tags = $("tags"), more = $("more"), hash = $("hash");
-let staleAt = 0;               // 当前展示数据的缓存时间，0 表示是刚拉到的
+const dlBtn = $("dlBtn"), dlLabel = $("dlLabel"), copyBtn = $("copyBtn"),
+      tags = $("tags"), more = $("more"), hash = $("hash"), changelog = $("changelog");
+let staleAt = 0;               // 当前展示数据的缓存时间，0 表示刚拉到的
 
-/* ===== 缓存（先秒开、再后台更新） ===== */
+/* ===================== 缓存：先秒开、再后台更新 ===================== */
 function readCache() {
   try {
     const c = JSON.parse(localStorage.getItem(CACHE_KEY));
@@ -94,7 +373,7 @@ function writeCache(d) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d })); } catch (e) {}
 }
 
-/* ===== 工具 ===== */
+/* ===================== 工具 ===================== */
 function addTag(text, cls) {
   if (!text) return;
   const s = document.createElement("span");
@@ -113,14 +392,15 @@ function fmtDate(s) {
   return isNaN(d.getTime()) ? "" : d.toLocaleDateString("zh-CN");
 }
 
-/* ===== 渲染 ===== */
+/* ===================== 渲染 ===================== */
 function render(rel) {
   if (!rel || typeof rel !== "object") return fail();
+
   // 先整体清空，保证"先缓存后刷新"两次调用也不会残留上一次的内容
   tags.textContent = "";
   more.textContent = ""; more.hidden = true;
   hash.textContent = ""; hash.hidden = true;
-  $("changelog").textContent = ""; $("changelog").hidden = true;
+  changelog.textContent = ""; changelog.hidden = true;
 
   $("relName").textContent = rel.name || rel.tag_name || "最新版本";
 
@@ -133,15 +413,15 @@ function render(rel) {
   if (!assets.length) {
     // 没有上传附件时，引导到发布页
     dlBtn.href = rel.html_url || PAGE;
-    dlBtn.textContent = "前往发布页下载";
+    dlLabel.textContent = "前往发布页下载";
   } else {
     const main = assets.find(a => /\.(zip|7z|rar|mrpack|jar)$/i.test(a.name)) || assets[0];
     dlBtn.href = main.browser_download_url;
-    dlBtn.textContent = "⬇ 下载最新版整合包";
+    dlLabel.textContent = "下载最新版整合包";
     addTag(main.name);
     addTag(fmtSize(main.size));
 
-    // 有校验值时展示出来，方便玩家核对包有没有被中转环节改坏
+    // 有校验值时展示出来，方便核对文件有没有被中转环节改坏
     if (main.digest && /^sha256:/i.test(main.digest)) {
       const h = main.digest.replace(/^sha256:/i, "");
       hash.textContent = "SHA-256：" + h;
@@ -169,35 +449,35 @@ function render(rel) {
 
 function renderChangelog(rel) {
   const body = (rel.body || "").trim();
-  const box = $("changelog");
-  box.textContent = ""; box.hidden = true;
   if (!body) return;
-  const title = document.createElement("strong");
+  const title = document.createElement("h2");
   title.textContent = "更新说明";
   const pre = document.createElement("div");
   pre.className = "log-body";
   // 必须用 textContent：发布说明是任意外部文本，用 innerHTML 等于让人家往你页面里塞脚本
   pre.textContent = body.length > LOG_MAX ? body.slice(0, LOG_MAX) + "…" : body;
-  box.appendChild(title); box.appendChild(pre);
+  changelog.appendChild(title);
+  changelog.appendChild(pre);
   if (body.length > LOG_MAX) {
     const a = document.createElement("a");
+    a.className = "more-link";
     a.href = rel.html_url || PAGE;
     a.target = "_blank"; a.rel = "noopener noreferrer";
     a.textContent = "查看完整说明 →";
-    box.appendChild(a);
+    changelog.appendChild(a);
   }
-  box.hidden = false;
+  changelog.hidden = false;
 }
 
 function fail() {
   $("relName").textContent = "暂时无法读取版本信息";
   tags.textContent = ""; more.hidden = true;
-  dlBtn.textContent = "前往 GitHub 下载最新版";
+  dlLabel.textContent = "前往 GitHub 下载最新版";
   dlBtn.href = PAGE;
   staleAt = 0;
 }
 
-/* ===== 拉取 ===== */
+/* ===================== 拉取 ===================== */
 async function load() {
   const c = readCache();
   if (c) { staleAt = c.t; render(c.d); }   // 先用缓存秒开
@@ -223,13 +503,16 @@ async function load() {
 }
 load();
 
-/* ===== 复制当前下载链接 ===== */
-let t;
+/* ===================== 复制下载链接 ===================== */
+let ct;
 function done(ok) {
-  clearTimeout(t);
+  clearTimeout(ct);
   copyBtn.textContent = ok ? "已复制！" : "复制失败，请手动复制";
   copyBtn.classList.toggle("success-state", ok);
-  t = setTimeout(() => { copyBtn.textContent = "复制下载链接"; copyBtn.classList.remove("success-state"); }, 2000);
+  ct = setTimeout(() => {
+    copyBtn.textContent = "复制下载链接";
+    copyBtn.classList.remove("success-state");
+  }, 2000);
 }
 function fallback(url) {
   const ta = document.createElement("textarea");
@@ -245,6 +528,204 @@ copyBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(url).then(() => done(true), () => fallback(url));
   else fallback(url);
 });
+
+/* ===================== 吸顶导航 + 入场动画 ===================== */
+const nav = $("nav");
+function onScroll() { nav.classList.toggle("scrolled", window.scrollY > 16); }
+window.addEventListener("scroll", onScroll, { passive: true });
+onScroll();
+
+const items = document.querySelectorAll(".reveal");
+if ("IntersectionObserver" in window) {
+  const obs = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add("in"); obs.unobserve(e.target); }
+  }), { threshold: .12, rootMargin: "0px 0px -8% 0px" });
+  items.forEach(i => obs.observe(i));
+} else items.forEach(i => i.classList.add("in"));
+</script>
+
+<script>
+/* ===================== 动效层：极光 + 尘埃 + 弹簧光晕 ===================== */
+(function () {
+  var cfg = {
+    mainK: 120, mainC: 13,   // 主光晕：阻尼比 ≈ 0.59 → 过冲约 10% 再回正
+    tailK: 42,  tailC: 7,    // 拖尾光晕：更软，摆得更久
+    parK: 26,   parC: 9,     // 极光视差：阻尼比 ≈ 0.88，几乎不过冲
+    depth: [34, 22, 48],     // 三层极光各自的跟手幅度（px），越大越"近"
+    motes: true,
+    maxMotes: 64
+  };
+
+  var mq = window.matchMedia("(prefers-color-scheme: light)");
+  // 尘埃颜色跟着主题走：深色下是暖黄绿，浅色下必须换成深绿，否则白底上看不见
+  var MOTE = mq.matches ? "rgba(74,138,34," : "rgba(211,247,156,";
+  function onScheme() { MOTE = mq.matches ? "rgba(74,138,34," : "rgba(211,247,156,"; }
+  if (mq.addEventListener) mq.addEventListener("change", onScheme);
+  else if (mq.addListener) mq.addListener(onScheme);
+
+  if (window.matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  var fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+
+  function $(id) { return document.getElementById(id); }
+  var fx = $("fx"), fxTop = $("fxTop"), spot = $("spot"), spark = $("spark"), cv = $("motes");
+  var bws = [$("bw1"), $("bw2"), $("bw3")];
+  var c2 = cv.getContext("2d");
+  var W = innerWidth, H = innerHeight;
+  var tx = W / 2, ty = H * 0.34;
+  var hasPointer = false, raf = 0, last = performance.now();
+
+  function spring(k, damp) {
+    return { x: tx, y: ty, vx: 0, vy: 0, k: k, c: damp, _x: -999, _y: -999 };
+  }
+  var main = spring(cfg.mainK, cfg.mainC);
+  var tail = spring(cfg.tailK, cfg.tailC);
+  var par  = spring(cfg.parK,  cfg.parC);
+
+  // 半隐式欧拉积分：先更新速度再更新位置，dt 已钳制，不会发散
+  function integrate(s, dt) {
+    s.vx += ((tx - s.x) * s.k - s.vx * s.c) * dt;
+    s.vy += ((ty - s.y) * s.k - s.vy * s.c) * dt;
+    s.x += s.vx * dt;
+    s.y += s.vy * dt;
+  }
+  function place(el, s) {
+    if (Math.abs(s.x - s._x) < 0.05 && Math.abs(s.y - s._y) < 0.05) return;
+    s._x = s.x; s._y = s.y;
+    el.style.transform = "translate3d(" + s.x.toFixed(1) + "px," + s.y.toFixed(1) + "px,0)";
+  }
+  var bwCache = [{ x: -9e9, y: -9e9 }, { x: -9e9, y: -9e9 }, { x: -9e9, y: -9e9 }];
+  function placeBlob(el, i, x, y) {
+    var c = bwCache[i];
+    if (Math.abs(x - c.x) < 0.05 && Math.abs(y - c.y) < 0.05) return;
+    c.x = x; c.y = y;
+    el.style.transform = "translate3d(" + x.toFixed(1) + "px," + y.toFixed(1) + "px,0)";
+  }
+
+  var motes = [];
+  function fit() {
+    var w = innerWidth, h = innerHeight;
+    var dpr = Math.min(devicePixelRatio || 1, 2);
+    var s = Math.min(dpr, Math.sqrt(2.2e6 / (w * h)));
+    cv.width = Math.round(w * s); cv.height = Math.round(h * s);
+    cv.style.width = w + "px"; cv.style.height = h + "px";
+    c2.setTransform(s, 0, 0, s, 0, 0);
+    W = w; H = h;
+    seed();
+  }
+  function seed() {
+    motes = [];
+    if (!cfg.motes) return;
+    var n = Math.round(Math.min(cfg.maxMotes, Math.max(18, W * H / 26000)));
+    for (var i = 0; i < n; i++) {
+      motes.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: 0.8 + Math.random() * 1.8,
+        vx: (Math.random() - .5) * .12,
+        vy: -(.04 + Math.random() * .15),
+        a: .12 + Math.random() * .3,
+        ph: Math.random() * 6.283,
+        sp: .4 + Math.random() * .8
+      });
+    }
+  }
+  function drawMotes(dt, now) {
+    if (!cfg.motes || !motes.length) return;
+    c2.clearRect(0, 0, W, H);
+    var t = now / 1000, R = 210;
+    for (var i = 0; i < motes.length; i++) {
+      var m = motes[i];
+      var dx = m.x - main.x, dy = m.y - main.y, d2 = dx * dx + dy * dy, near = 0;
+      if (d2 < R * R) {
+        var d = Math.sqrt(d2) || 1;
+        near = 1 - d / R;
+        var f = near * near * 34 * dt;
+        m.x += dx / d * f; m.y += dy / d * f;
+      }
+      m.x += m.vx * dt * 60;
+      m.y += m.vy * dt * 60;
+      if (m.y < -14) { m.y = H + 14; m.x = Math.random() * W; }
+      if (m.x < -14) m.x = W + 14;
+      else if (m.x > W + 14) m.x = -14;
+
+      var a = m.a * (0.55 + 0.45 * Math.sin(t * m.sp + m.ph));
+      if (near) a *= 1 + near * 2.4;
+      if (a > 1) a = 1;
+      c2.beginPath();
+      c2.arc(m.x, m.y, m.r * (1 + near * .5), 0, 6.2832);
+      c2.fillStyle = MOTE + a.toFixed(3) + ")";
+      c2.fill();
+    }
+  }
+
+  function frame(now) {
+    var dt = Math.min(0.05, (now - last) / 1000) || 0.016;
+    last = now;
+
+    if (!fine && !hasPointer) {
+      var t = now / 1000;
+      tx = W * (0.5 + 0.34 * Math.sin(t * 0.13));
+      ty = H * (0.40 + 0.24 * Math.sin(t * 0.19 + 1.1));
+    }
+
+    integrate(main, dt);
+    integrate(tail, dt);
+    integrate(par, dt);
+    place(spot, main);
+    place(spark, tail);
+
+    var nx = par.x / W - 0.5, ny = par.y / H - 0.5;
+    for (var i = 0; i < bws.length; i++) {
+      var d = cfg.depth[i] || 0;
+      placeBlob(bws[i], i, -nx * d * 2, -ny * d * 1.4);
+    }
+
+    drawMotes(dt, now);
+    raf = requestAnimationFrame(frame);
+  }
+
+  window.addEventListener("pointermove", function (e) {
+    tx = e.clientX; ty = e.clientY;
+    hasPointer = true;
+    if (!fx.classList.contains("fx-on")) fx.classList.add("fx-on");
+  }, { passive: true });
+
+  window.addEventListener("pointerdown", function (e) {
+    tx = e.clientX; ty = e.clientY;
+    hasPointer = true;
+    if (!fx.classList.contains("fx-on")) fx.classList.add("fx-on");
+    var r = document.createElement("div");
+    r.className = "ripple";
+    r.style.left = e.clientX + "px";
+    r.style.top = e.clientY + "px";
+    fxTop.appendChild(r);
+    requestAnimationFrame(function () { r.classList.add("go"); });
+    r.addEventListener("animationend", function () { r.remove(); });
+    setTimeout(function () { if (r.parentNode) r.remove(); }, 1600);
+  }, { passive: true });
+
+  [].forEach.call(document.querySelectorAll(".release-card,.panel"), function (el) {
+    el.addEventListener("pointermove", function (e) {
+      var b = el.getBoundingClientRect();
+      el.style.setProperty("--mx", (e.clientX - b.left) + "px");
+      el.style.setProperty("--my", (e.clientY - b.top) + "px");
+    }, { passive: true });
+  });
+
+  var rt2;
+  window.addEventListener("resize", function () {
+    clearTimeout(rt2);
+    rt2 = setTimeout(fit, 200);
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { cancelAnimationFrame(raf); raf = 0; }
+    else if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); }
+  });
+
+  fit();
+  if (!fine) fx.classList.add("fx-on");
+  raf = requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
