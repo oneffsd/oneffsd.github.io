@@ -166,6 +166,8 @@ body{
 #playerChart{width:100%;height:280px;display:block}
 .chart-foot{margin-top:8px;font-size:.75rem;color:var(--faint);display:flex;justify-content:space-between;
   gap:10px;flex-wrap:wrap}
+/* 数据明显滞后时把「最后一点的时间」标成警示色，别再让人误以为图表一直在实时更新 */
+.chart-foot .stale{color:var(--warn)}
 
 /* ===================== 区块骨架 ===================== */
 .section{padding:clamp(56px,9vw,104px) 0}
@@ -232,10 +234,13 @@ footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin
 }
 
 /* ===================== 入场动画 ===================== */
-.reveal{opacity:0;transform:translateY(22px);
+/* 默认可见。只有根元素带了 .js（说明脚本真的在跑）才隐藏起来做入场，
+   脚本一旦失效就退化成「直接显示」，而不是白屏。 */
+.reveal{opacity:1;transform:none}
+.js .reveal{opacity:0;transform:translateY(22px);
   transition:opacity .8s var(--ease),transform .8s var(--ease);
   transition-delay:calc(var(--d,0) * 80ms)}
-.reveal.in{opacity:1;transform:none}
+.js .reveal.in{opacity:1;transform:none}
 
 /* ===================== 小屏 ===================== */
 @media(max-width:700px){
@@ -352,11 +357,21 @@ footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin
 @media(prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
   html{scroll-behavior:auto}
-  .reveal{opacity:1;transform:none}
+  .reveal,.js .reveal{opacity:1;transform:none}
 }
 </style>
 </head>
 <body>
+<script>
+/* 只有脚本确实在跑，才把正文藏起来做入场动画。
+   脚本被拦掉、被剥掉、或中途报错时，页面必须可见，否则整屏只剩导航栏。
+   这个脚本必须待在样式表之后：一旦放在 head 里挡在 CSS 前面，
+   某些预览器会直接丢掉整段样式，页面就退化成一堆无样式裸标签。 */
+document.documentElement.classList.add("js");
+setTimeout(function () {
+  if (!document.documentElement.dataset.revealReady) document.documentElement.classList.remove("js");
+}, 3000);
+</script>
 
 <div class="bg" aria-hidden="true"></div>
 
@@ -421,8 +436,8 @@ footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin
 </div>
 <canvas id="playerChart" role="img" aria-label="近12小时在线人数折线图"></canvas>
 <div class="chart-foot">
-<span>数据由后台定时记录，约每 10 分钟更新一次</span>
-<span id="lastUpd" aria-live="polite">最近更新：--</span>
+<span>数据由后台定时记录，目标间隔 5 分钟，实际受调度影响可能延迟</span>
+<span id="lastUpd" aria-live="polite">数据最后一点：--</span>
 </div>
 </div>
 </div>
@@ -490,10 +505,11 @@ footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin
 const cfg = {
   ip: "114.66.40.127",
   port: 6043,
-  version: "26.3",   // 默认展示值，查询成功后会被接口返回的真实版本覆盖
+  version: "26.1.2",   // 默认展示值，查询成功后会被接口返回的真实版本覆盖
   timeout: 8000,       // 接口超时（毫秒）
   interval: 35000,     // 自动刷新间隔（毫秒）
-  keepHours: 12,       // 图表保留时长
+  keepHours: 24,       // 本地数据保留时长（与 data.json 的保留时长对齐）
+  viewHours: 12,       // 图表显示时长（窗口外的点不画，只用来补左边缘）
   sampleMs: 300000,    // 人数不变时，图表最多每隔这么久补一个点（5 分钟）
   remoteEvery: 4       // 每刷新几次顺带同步一次 data.json
 };
@@ -533,7 +549,7 @@ copyBtn.addEventListener("click", () => {
 });
 
 /* ===================== 在线人数数据 ===================== */
-const KEY = "playerChartData", maxAge = cfg.keepHours * 3600e3;
+const KEY = "playerChartData", maxAge = cfg.keepHours * 3600e3, viewMs = cfg.viewHours * 3600e3;
 let points = [];
 // 丢弃时间戳异常的数据（时钟错乱、来自"未来"的点）
 function sane(p) {
@@ -554,7 +570,7 @@ function normalize() {
 function record(num) {
   const now = Date.now(), last = points[points.length - 1];
   if (!last || last.num !== num || now - last.time >= cfg.sampleMs) points.push({ time: now, num });
-  prune(); normalize(); save(); drawChart();
+  prune(); normalize(); save(); drawChart(); updStamp();
 }
 
 /* ===================== 图表 ===================== */
@@ -621,7 +637,14 @@ function drawChart() {
   const c = palette();
   const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom, now = Date.now();
   const baseY = pad.top + ch;
-  const maxNum = points.reduce((mx, p) => Math.max(mx, p.num), 0);
+  // 数据保留 keepHours，但图表只画 viewHours：
+  // 窗口左边缘之前最后一个点的值直接补到左边缘——人数是阶梯型数据，
+  // 这个值一直有效到下一个记录点，所以补出来的不是假数据。
+  const winStart = now - viewMs;
+  const vis = points.filter(p => p.time >= winStart);
+  const before = points.filter(p => p.time < winStart).pop();
+  if (before) vis.unshift({ time: winStart, num: before.num });
+  const maxNum = vis.reduce((mx, p) => Math.max(mx, p.num), 0);
   const maxY = Math.max(5, Math.ceil(maxNum / 5) * 5);
   ctx.clearRect(0, 0, w, h);
   ctx.font = "11px " + MONO;
@@ -644,13 +667,13 @@ function drawChart() {
   const T = cw < 260 ? 2 : cw < 360 ? 3 : cw < 460 ? 4 : 6;
   for (let j = 0; j <= T; j++) {
     const x = pad.left + cw / T * j;
-    const d = new Date(now - maxAge / T * (T - j));
+    const d = new Date(now - viewMs / T * (T - j));
     ctx.textAlign = j === 0 ? "left" : j === T ? "right" : "center";
     ctx.fillStyle = c.label;
     ctx.fillText(hhmm(d), j === 0 ? pad.left - 2 : j === T ? w - pad.right + 2 : x, baseY + 11);
   }
 
-  if (!points.length) {
+  if (!vis.length) {
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.font = "12px " + MONO;
     ctx.fillStyle = c.label;
@@ -659,9 +682,9 @@ function drawChart() {
   }
 
   // 时间与人数都夹在绘图区内，时钟偏差的点也不会画到画布外
-  const px = t => clamp(pad.left + (t - (now - maxAge)) / maxAge * cw, pad.left, pad.left + cw);
+  const px = t => clamp(pad.left + (t - (now - viewMs)) / viewMs * cw, pad.left, pad.left + cw);
   const py = n => clamp(baseY - n / maxY * ch, pad.top, baseY);
-  const pts = points.map(p => ({ x: px(p.time), y: py(p.num) }));
+  const pts = vis.map(p => ({ x: px(p.time), y: py(p.num) }));
   pts.push({ x: px(now), y: pts[pts.length - 1].y });   // 曲线始终贴到右侧
 
   // 面积
@@ -696,6 +719,18 @@ const statDom = $("serverStat"), playerDom = $("playerNum"), refreshBtn = $("ref
       lastUpd = $("lastUpd"), dot = $("dot");
 let busy = false;
 function setStat(text, cls) { statDom.textContent = text; dot.className = "dot " + cls; }
+// 页脚要显示的是「数据里最后一个点」的时间，而不是这次查询 API 的时间——
+// 两者可能差好几个小时，混用会让人以为图表一直在实时更新
+function updStamp() {
+  const last = points[points.length - 1];
+  if (!last) { lastUpd.textContent = "数据最后一点：--"; lastUpd.classList.remove("stale"); return; }
+  const mins = Math.max(0, Math.round((Date.now() - last.time) / 60000));
+  const ago = mins < 1 ? "刚刚"
+    : mins < 60 ? mins + " 分钟前"
+    : Math.floor(mins / 60) + " 小时" + (mins % 60 ? " " + (mins % 60) + " 分钟" : "") + "前";
+  lastUpd.textContent = "数据最后一点：" + hhmm(new Date(last.time)) + " · " + ago;
+  lastUpd.classList.toggle("stale", mins > 30);
+}
 // 统一超时处理：优先用 AbortController，老浏览器退化为 Promise.race
 function fetchTimeout(url, ms) {
   if ("AbortController" in window) {
@@ -720,7 +755,6 @@ async function checkServer() {
     const res = await fetchTimeout("https://api.mcstatus.io/v2/status/java/" + addr, cfg.timeout);
     if (!res.ok) throw new Error("http " + res.status);
     const d = await res.json();
-    lastUpd.textContent = "最近更新：" + hhmm(new Date());
     if (d && d.online) {
       if (d.version && d.version.name) $("versionTxt").textContent = d.version.name;
       const on = d.players && Number.isFinite(d.players.online) ? d.players.online : 0;
@@ -753,7 +787,7 @@ async function loadRemote() {
     const remote = arr.filter(sane);
     if (!remote.length) return false;
     points = points.concat(remote);
-    prune(); normalize(); save();
+    prune(); normalize(); save(); updStamp();
     return true;
   } catch (e) { return false; }
 }
@@ -789,11 +823,12 @@ if ("IntersectionObserver" in window) {
   }), { threshold: .12, rootMargin: "0px 0px -8% 0px" });
   items.forEach(i => obs.observe(i));
 } else items.forEach(i => i.classList.add("in"));
+document.documentElement.dataset.revealReady = "1";
 
 /* ===================== 启动 ===================== */
 window.addEventListener("load", async () => {
   onScroll();
-  prune(); normalize();
+  prune(); normalize(); updStamp();
   resizeCanvas();
   if (await loadRemote()) drawChart();
   setTimeout(checkServer, 300);
