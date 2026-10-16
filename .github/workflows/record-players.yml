@@ -1,0 +1,152 @@
+name: record-players
+
+# 这个工作流只做一件事：每 10 分钟向 mcstatus 问一次在线人数，追加到 data 分支的 data.json。
+#
+# 为什么不提交到主分支：
+#   1) 每 10 分钟一次 = 一天 144 个提交，主分支历史会被采样数据彻底淹没；
+#   2) 每次推送到 Pages 的发布分支都会触发一次站点重新构建，而 Pages 有
+#      "每小时 10 次构建"的软上限——推得太勤，构建会被丢弃，页面反而拿到旧数据。
+#   data 分支是独立的 orphan 分支（只有一个提交），既不吃主分支历史，也不碰 Pages。
+on:
+  schedule:
+    # GitHub 的 schedule 在高峰期会被延迟甚至整次丢弃，10 分钟是折中值：
+    # 丢一次还有 20 分钟粒度，同时也稳稳待在 Pages 构建软上限之内。
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: record-players
+  # 采样是"读旧文件 → 追加 → 写回"，两个运行重叠必然互相覆盖，所以只能串行。
+  # 代价：排队时 GitHub 只保留最新的一个 pending 运行，更早的 pending 会被取消——
+  # 因此下面必须有 timeout-minutes，否则一次卡死会连续吃掉后面所有定时触发。
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    # 没有这一条时，一次卡住的运行会一直占着上面的 concurrency 组，
+    # 排队中的采样点会被一个个顶掉（表现为图表间隔莫名其妙变成几小时）。
+    timeout-minutes: 10
+    env:
+      ADDR: "114.66.40.127:6043"
+      DATA_BRANCH: data
+      DATA_FILE: data.json
+      KEEP_HOURS: "24"        # 必须与 index.html 里 cfg.keepHours 保持一致
+      GAP_WARN_MIN: "30"      # 距上一条记录超过这么久就在 Actions 里发 warning
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 不需要主分支历史，也不需要 checkout 出 data 分支：
+          # 下面全部用 git fetch / plumbing 在 .git 里完成，工作区保持干净。
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: 采样并写入 data 分支
+        run: |
+          set -euo pipefail
+
+          NOW=$(( $(date +%s) * 1000 ))
+          CUTOFF=$(( NOW - KEEP_HOURS * 3600 * 1000 ))
+
+          # ---------- 1. 采样 ----------
+          # -w 拿状态码、-o 落盘：这样解析失败时还能把原始响应打出来，
+          # 否则日志里只剩一句没有信息量的 "query failed"。
+          CODE=$(curl -s -m 20 -o /tmp/res.json -w '%{http_code}' \
+                   "https://api.mcstatus.io/v2/status/java/$ADDR" || echo 000)
+          echo "mcstatus HTTP $CODE"
+
+          # 三个分支：在线取真实人数、离线记 0、返回体不认得就什么都不写（empty → jq -e 退出码 4）
+          if ! NUM=$(jq -er 'if .online == true then (.players.online // 0)
+                             elif .online == false then 0
+                             else empty end' /tmp/res.json 2>/dev/null); then
+            echo "::warning::mcstatus 查询失败（HTTP $CODE），本次不写采样点"
+            head -c 300 /tmp/res.json 2>/dev/null || true
+            echo
+            exit 0
+          fi
+          echo "采样成功：num=$NUM"
+
+          # ---------- 2. 取出远端已有数据 ----------
+          # data 分支永远只有一个 root commit，--depth=1 足够。
+          BASE=""
+          if git fetch --depth=1 --quiet origin "$DATA_BRANCH" 2>/dev/null; then
+            BASE=$(git rev-parse FETCH_HEAD)
+            git show "$BASE:$DATA_FILE" > /tmp/old.json 2>/dev/null || echo '[]' > /tmp/old.json
+            echo "已取到 $DATA_BRANCH@${BASE:0:7}，现有 $(jq 'length' /tmp/old.json) 个点"
+          else
+            echo '[]' > /tmp/old.json
+            echo "$DATA_BRANCH 分支还不存在，本次创建"
+          fi
+
+          # 间隔自检：cron 是 10 分钟，出现远大于它的间隔就说明中间有触发被丢弃或运行失败。
+          # 没有这段的话，查询失败全是静默 exit 0，Actions 界面一片绿，没人知道数据在变稀。
+          LAST=$(jq -r 'if length > 0 then .[-1].time else 0 end' /tmp/old.json)
+          if [ "$LAST" -gt 0 ]; then
+            GAP=$(( (NOW - LAST) / 60000 ))
+            echo "上一条记录在 $GAP 分钟前"
+            if [ "$GAP" -gt "$GAP_WARN_MIN" ]; then
+              echo "::warning::距上一条记录已 $GAP 分钟（cron 是 10 分钟），中间有定时触发被丢弃或运行失败"
+            fi
+          fi
+
+          # ---------- 3. 追加 + 裁剪 ----------
+          # 先按同一毫秒去重再追加：即使整段逻辑重跑（下面的重试），也不会写出两个重复点。
+          append_sample() {
+            jq -c --argjson t "$NOW" --argjson n "$NUM" --argjson c "$CUTOFF" \
+              '[.[] | select(.time != $t and .time >= $c)] + [{time:$t,num:$n}]' \
+              /tmp/old.json > /tmp/new.json
+            # 强推之前先确认产物是个非空数组，别把半截 JSON 推上去
+            jq -e 'type == "array" and length > 0' /tmp/new.json > /dev/null
+          }
+
+          # ---------- 4. 构造 data 分支的新提交 ----------
+          # 不用 checkout/commit，直接走 plumbing：
+          # 每次都是一个"没有父提交"的 root commit，所以 data 分支历史永远只有 1 个提交，
+          # 一天 144 次采样也只占一个 blob 的空间。主分支的文件与索引完全不受影响。
+          export GIT_AUTHOR_NAME="github-actions[bot]"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+          export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+
+          build_commit() {
+            append_sample
+            BLOB=$(git hash-object -w /tmp/new.json)
+            TREE=$(printf '100644 blob %s\t%s\n' "$BLOB" "$DATA_FILE" | git mktree)
+            COMMIT=$(git commit-tree "$TREE" -m "data: $(date -u +%FT%TZ) num=$NUM")
+          }
+
+          # 推送策略分两种：
+          #   分支已存在 → 每次都是重写历史（单 root commit），必须强推，但要带 lease：
+          #                只在远端仍是我们刚读到的那个提交时才推，有并行/手动改动进来时
+          #                会失败而不是悄悄覆盖，然后走下面的重试把两个点合并。
+          #   分支不存在 → 普通推送即可（没有任何东西会被覆盖）。如果并发运行刚好抢先建好了，
+          #                这里会因为非快进而失败，重试时重新同步即可，不需要靠 lease 的空值语义。
+          push_commit() {
+            if [ -n "$BASE" ]; then
+              git push --quiet --force-with-lease="refs/heads/$DATA_BRANCH:$BASE" \
+                origin "$COMMIT:refs/heads/$DATA_BRANCH"
+            else
+              git push --quiet origin "$COMMIT:refs/heads/$DATA_BRANCH"
+            fi
+          }
+
+          for i in 1 2 3 4 5; do
+            build_commit
+            if push_commit; then
+              echo "已推送 $COMMIT 到 $DATA_BRANCH（第 $i 次尝试），共 $(jq 'length' /tmp/new.json) 个点"
+              exit 0
+            fi
+
+            echo "::warning::第 $i 次推送失败，5 秒后重新同步远端再试"
+            sleep 5
+            if git fetch --depth=1 --quiet origin "$DATA_BRANCH" 2>/dev/null; then
+              BASE=$(git rev-parse FETCH_HEAD)
+              git show "$BASE:$DATA_FILE" > /tmp/old.json 2>/dev/null || echo '[]' > /tmp/old.json
+            fi
+          done
+
+          echo "::error::重试 5 次仍无法推送，这次采样点没落盘"
+          exit 1
