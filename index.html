@@ -559,7 +559,7 @@ function record(num) {
 
 /* ===================== 图表 ===================== */
 const canvas = $("playerChart"), ctx = canvas.getContext("2d");
-const pad = { top: 20, right: 26, bottom: 34, left: 0 };
+const pad = { top: 20, right: 26, bottom: 34, left: 42 };
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const rootCS = getComputedStyle(document.documentElement);
 const MONO = rootCS.getPropertyValue("--mono") || "monospace";
