@@ -436,7 +436,7 @@ setTimeout(function () {
 </div>
 <canvas id="playerChart" role="img" aria-label="近12小时在线人数折线图"></canvas>
 <div class="chart-foot">
-<span>数据由后台定时记录，目标间隔 5 分钟，实际受调度影响可能延迟</span>
+<span>数据由后台定时记录，目标间隔 10 分钟，实际受调度影响可能延迟</span>
 <span id="lastUpd" aria-live="polite">数据最后一点：--</span>
 </div>
 </div>
@@ -481,8 +481,6 @@ setTimeout(function () {
 <div class="rule reveal" data-n="02" style="--d:1"><div><h3>守则二</h3><p>公共聊天区只会出现玩家正常发言。若全屏突然出现重复刷屏的同一句话、无意义重复字符，立刻关闭聊天界面，禁止阅读，等待刷屏结束再正常游戏。</p></div></div>
 <div class="rule reveal" data-n="03" style="--d:2"><div><h3>守则三</h3><p>若你发现原本熟悉的队友，建筑风格、说话语气、游戏习惯完全大变样，不再与其交流、不再同行、不再交换物品，此时的他已经不是原本的玩家。</p></div></div>
 <div class="rule reveal" data-n="04" style="--d:3"><div><h3>守则四</h3><p>服务器矿洞光照正常，火把统一暖黄色。若你手中或地面的火把灯光惨白、频繁闪烁、忽明忽暗，立刻熄灭火把，原路快速返回地面，当天永久禁止下矿。</p></div></div>
-<div class="rule reveal" data-n="05" style="--d:4"><div><h3>守则五</h3><p>服务器音效正常，脚步、挖掘、怪物叫声来源清晰可辨。若你听见身后有人用你的游戏 ID 叫你，而玩家列表无对应玩家，不要回头，不要应答，继续手上的操作，直到该声音自行消失。</p></div></div>
-<div class="rule reveal" data-n="06" style="--d:5"><div><h3>守则六</h3><p>正常世界中，动物不会成群凝视同一方向。若你发现牛羊面朝同一方位静止不动，不进食、不移动、不发出声音，立刻远离该区域，当天不要在此建造，更不要在此过夜。</p></div></div>
 </div>
 <p class="rule-note reveal">以上守则均为服务器设定文案与氛围玩梗，游戏中不存在超自然现象，请安心游玩（大概？）。</p>
 </div>
@@ -510,10 +508,12 @@ const cfg = {
   version: "26.1.2",   // 默认展示值，查询成功后会被接口返回的真实版本覆盖
   timeout: 8000,       // 接口超时（毫秒）
   interval: 35000,     // 自动刷新间隔（毫秒）
-  keepHours: 24,       // 本地数据保留时长（与 data.json 的保留时长对齐）
+  keepHours: 24,       // 本地数据保留时长（与 workflow 里的 KEEP_HOURS 对齐）
   viewHours: 12,       // 图表显示时长（窗口外的点不画，只用来补左边缘）
   sampleMs: 300000,    // 人数不变时，图表最多每隔这么久补一个点（5 分钟）
-  remoteEvery: 4       // 每刷新几次顺带同步一次 data.json
+  remoteEvery: 4,      // 每刷新几次顺带同步一次后台数据
+  dataRepo: "",        // 数据来源仓库 "owner/repo"，留空 = 从 GitHub Pages 地址自动推断
+  dataBranch: "data"   // 采样数据所在分支（与 workflow 里的 DATA_BRANCH 一致）
 };
 const addr = cfg.ip + ":" + cfg.port;
 const $ = id => document.getElementById(id);
@@ -782,19 +782,44 @@ async function checkServer() {
 }
 refreshBtn.addEventListener("click", checkServer);
 
-/* ===================== 读取后台 data.json（由 GitHub Actions 定时写入） ===================== */
+/* ===================== 读取后台采样数据（由 GitHub Actions 定时写入 data 分支） ===================== */
+// 后台数据写在独立的 data 分支上，不再跟着主分支走：
+// 主分支每 10 分钟一个数据提交既会淹没历史，也会反复触发 Pages 重新构建。
+// 这里从当前地址反推 "owner/repo"——GitHub Pages 的地址形如
+// https://<owner>.github.io/<repo>/，用户主页仓库则是 https://<owner>.github.io/。
+function guessRepo() {
+  const m = location.hostname.match(/^([\w-]+)\.github\.io$/i);
+  if (!m) return "";
+  const owner = m[1], seg = location.pathname.split("/")[1] || "";
+  return owner + "/" + (seg || owner + ".github.io");
+}
+function dataSourceBases() {
+  const bases = [];
+  const repo = cfg.dataRepo || guessRepo();
+  // raw.githubusercontent 对分支内容的缓存是 5 分钟量级（?t= 只是顺手带上的保险），
+  // 对一个 10 分钟采样一次的数据源来说足够新鲜。
+  // 若仓库是私有的（raw 取不到内容），把 cfg.dataRepo 留空也救不了，删掉这一行即可
+  // 退回同目录的 data.json；也可换成 jsDelivr，代价是分支缓存以小时计。
+  if (repo) bases.push("https://raw.githubusercontent.com/" + repo + "/" + cfg.dataBranch + "/data.json");
+  bases.push("data.json");
+  return bases;
+}
 async function loadRemote() {
-  try {
-    const res = await fetch("data.json?t=" + Date.now(), { cache: "no-store" });
-    if (!res.ok) return false;
-    const arr = await res.json();
-    if (!Array.isArray(arr)) return false;
-    const remote = arr.filter(sane);
-    if (!remote.length) return false;
-    points = points.concat(remote);
-    prune(); normalize(); save(); updStamp();
-    return true;
-  } catch (e) { return false; }
+  // 按顺序尝试各来源，谁先拿到有效数据就用谁
+  for (const base of dataSourceBases()) {
+    try {
+      const res = await fetch(base + "?t=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) continue;
+      const arr = await res.json();
+      if (!Array.isArray(arr)) continue;
+      const remote = arr.filter(sane);
+      if (!remote.length) continue;
+      points = points.concat(remote);
+      prune(); normalize(); save(); updStamp();
+      return true;
+    } catch (e) { /* 这个来源不通，换下一个 */ }
+  }
+  return false;
 }
 
 /* ===================== 轮询 ===================== */
