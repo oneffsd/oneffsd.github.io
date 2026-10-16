@@ -490,7 +490,7 @@ footer .mark path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin
 const cfg = {
   ip: "114.66.40.127",
   port: 6043,
-  version: "26.1.2",   // 默认展示值，查询成功后会被接口返回的真实版本覆盖
+  version: "26.3",   // 默认展示值，查询成功后会被接口返回的真实版本覆盖
   timeout: 8000,       // 接口超时（毫秒）
   interval: 35000,     // 自动刷新间隔（毫秒）
   keepHours: 12,       // 图表保留时长
@@ -559,7 +559,7 @@ function record(num) {
 
 /* ===================== 图表 ===================== */
 const canvas = $("playerChart"), ctx = canvas.getContext("2d");
-const pad = { top: 20, right: 26, bottom: 34, left: 42 };
+const pad = { top: 20, right: 26, bottom: 34, left: 0 };
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const rootCS = getComputedStyle(document.documentElement);
 const MONO = rootCS.getPropertyValue("--mono") || "monospace";
